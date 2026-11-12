@@ -8,18 +8,24 @@
   --green: #8fb59b; --green-ink: #0f1a13; --green-soft: rgba(143, 181, 155, .13);
   --ochre: #c6a46b; --ochre-soft: rgba(198, 164, 107, .14); --warn: #d9a066; --danger: #cf6b60; --info: #9cb9ca;
   --edge: #5a665d; --sb: #111512;
-  --r: 6px; --r-sm: 4px;
+  --r: 14px; --r-sm: 10px;
+  --card-border: 1px solid var(--line); --shadow: none;
+  --hero-bg: #1f3a2a; --hero-line: rgba(239, 231, 214, .14);
   --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
   color-scheme: dark;
 }
 [data-theme="light"] {
-  --bg: #f2ede2; --surface: #f8f5ee; --surface2: #ebe5d7; --line: #d9d0be; --line2: #c6bba5;
-  --text: #1d2a21; --muted: #6d685b; --accent: #22382b; --accent-ink: #f5f0e4;
+  --bg: #ece4d4; --surface: #f7f2e7; --surface2: #e6ddca; --line: #d6cbb6; --line2: #c4b79e;
+  --text: #1d2a21; --muted: #605a4e; --accent: #22382b; --accent-ink: #f5f0e4;
   --green: #2f5a3f; --green-ink: #f5f0e4; --green-soft: rgba(47, 90, 63, .1);
-  --ochre: #80612a; --ochre-soft: rgba(154, 119, 58, .12); --warn: #9a5b23; --danger: #8e3a32; --info: #3f6177;
-  --edge: #8f836b; --sb: #22382b;
+  --ochre: #775a25; --ochre-soft: rgba(154, 119, 58, .12); --warn: #9a5b23; --danger: #8e3a32; --info: #3f6177;
+  --edge: #887c64; --sb: #22382b;
+  --card-border: 1px solid transparent; --shadow: 0 1px 2px rgba(34, 56, 43, .06), 0 8px 24px rgba(34, 56, 43, .07);
+  --hero-bg: #22382b; --hero-line: rgba(243, 236, 220, .16);
   color-scheme: light;
 }
+/* Leinen: feine Struktur im hellen Hintergrund (nur CSS, keine Bilddatei) */
+[data-theme="light"] body { background: repeating-linear-gradient(0deg, rgba(34, 56, 43, .02) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(34, 56, 43, .016) 0 1px, transparent 1px 4px), var(--bg); }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.45; }
 body { min-height: 100vh; min-height: 100dvh; -webkit-text-size-adjust: 100%; overscroll-behavior-y: none; -webkit-font-smoothing: antialiased; }
@@ -41,8 +47,15 @@ button { cursor: pointer; border: 0; background: none; padding: 0; touch-action:
 .topbar .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
 h2, .eyebrow { font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 28px 0 10px; font-weight: 600; }
 .eyebrow { margin: 0 0 6px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; margin-bottom: 12px; }
-.card.hero { padding: 22px 20px 16px; }
+.card { background: var(--surface); border: var(--card-border); border-radius: var(--r); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+/* Karte „Nächstes Training“: Waldgrün mit Creme-Schrift und Ocker-Knopf, in beiden Themen */
+.card.hero { padding: 22px 20px 14px; background: var(--hero-bg); border-color: transparent; box-shadow: 0 10px 30px rgba(20, 34, 26, .22);
+  --text: #f3ecdc; --muted: #c9c0a8; --accent: #c9a564; --accent-ink: #1b2a20; --line: var(--hero-line); --line2: rgba(243, 236, 220, .3); --edge: rgba(243, 236, 220, .38); --ochre: #d9bb80;
+  color: var(--text); }
+.card.hero .chips { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 6px 0 2px; }
+.card.hero .chip { font-size: 13px; color: #efe7d6; padding: 5px 10px; border-radius: 999px; background: rgba(243, 236, 220, .1); }
+.card.hero .chip::after { content: none; }
+.card.hero .chip.sug { color: #e3c993; background: rgba(217, 187, 128, .14); }
 .row { display: flex; align-items: center; gap: 10px; }
 .row.between { justify-content: space-between; }
 .grow { flex: 1; min-width: 0; }
@@ -165,7 +178,7 @@ h2, .eyebrow { font-family: var(--sans); font-size: 12px; text-transform: upperc
 .wake { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; letter-spacing: .06em; }
 
 /* ---------- Listen, Tabs ---------- */
-.list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin-bottom: 12px; }
+.list { background: var(--surface); border: var(--card-border); border-radius: var(--r); overflow: hidden; margin-bottom: 14px; box-shadow: var(--shadow); }
 .li { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); min-height: 56px; width: 100%; text-align: left; background: none; }
 .li:first-child { border-top: 0; }
 .li .t { font-weight: 500; }
@@ -209,7 +222,7 @@ details.card[open] summary { margin-bottom: 12px; }
 
 /* ---------- Sheet ---------- */
 .sheet-bg { position: fixed; inset: 0; z-index: 50; background: rgba(8, 10, 8, .6); display: flex; align-items: flex-end; justify-content: center; animation: fade .15s; }
-.sheet { width: 100%; max-width: 560px; max-height: 90vh; max-height: 90dvh; overflow: auto; background: var(--surface); border-radius: 10px 10px 0 0; border-top: 1px solid var(--line); padding: 0 20px calc(var(--safe-b) + 18px); overscroll-behavior: contain; animation: up .2s ease-out; }
+.sheet { width: 100%; max-width: 560px; max-height: 90vh; max-height: 90dvh; overflow: auto; background: var(--surface); border-radius: 18px 18px 0 0; border-top: 1px solid var(--line); padding: 0 20px calc(var(--safe-b) + 18px); overscroll-behavior: contain; animation: up .2s ease-out; }
 .sheet .sheet-top { position: sticky; top: 0; z-index: 3; height: 44px; margin: 0 -20px 4px; background: var(--surface); display: flex; align-items: center; justify-content: center; touch-action: none; cursor: grab; }
 .sheet .grab { width: 40px; height: 4px; border-radius: 2px; background: var(--line2); }
 .sheet .sheet-x { position: absolute; right: 6px; top: 0; width: 44px; height: 44px; display: grid; place-items: center; font-size: 26px; font-weight: 300; line-height: 1; color: var(--muted); }
@@ -324,3 +337,57 @@ details.adv .list { margin-bottom: 4px; }
 .optkeep summary { min-height: 44px; display: flex; align-items: center; color: var(--muted); cursor: pointer; }
 .kv1 { display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid var(--line); }
 .kv1 b { font-family: var(--sans); font-variant-numeric: tabular-nums; }
+
+/* ---------- 2.9: Gestaltung ---------- */
+/* Navigation mit Linien-Icons */
+.nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 62px; }
+.nav button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.nav button svg .fill { fill: currentColor; stroke: none; }
+.nav button.on::before { left: 34%; right: 34%; }
+/* Häkchen mit Lorbeerblatt */
+.lck { width: 20px; height: 20px; display: block; }
+.lck .ln { fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.lck .lf { fill: currentColor; opacity: .6; }
+.wk .dot .lck { width: 22px; height: 22px; }
+/* Gym: größere, kräftigere Zahlen */
+.stepper input { font-size: 38px; font-weight: 400; letter-spacing: -.01em; }
+.set .val { font-size: 18px; }
+/* Pausentimer als Ring, der sich leert */
+.timer { grid-template-columns: auto 1fr auto; gap: 12px; }
+.timer .ring { width: 50px; height: 50px; transform: rotate(-90deg); }
+.timer .ring circle { fill: none; stroke-width: 3.2; }
+.timer .ring .rt { stroke: var(--line); }
+.timer .ring .rv { stroke: var(--text); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.timer.over .ring .rt { stroke: rgba(0, 0, 0, .18); }
+.timer.over .ring .rv { stroke: transparent; }
+/* Leere Zustände mit Lorbeer */
+.card.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: var(--muted); padding: 30px 18px 26px; font-size: 14.5px; }
+.empty-art { width: 54px; height: 57px; color: color-mix(in srgb, var(--muted) 55%, transparent); --ochre: color-mix(in srgb, var(--ochre) 70%, transparent); }
+/* Diagramme: Fläche unter der Linie, Lorbeer am Bestwert */
+.chart .area { fill: var(--accent); opacity: .08; }
+.chart .bestmark { fill: var(--ochre); }
+.chart .bestmark .st { fill: none; stroke: var(--ochre); stroke-width: 1.6; }
+.sprig { width: 22px; height: 22px; flex: none; fill: var(--ochre); }
+.sprig .st { fill: none; stroke: var(--ochre); stroke-width: 1.6; }
+/* Monatsrückblick im Magazin-Stil */
+.mtitle { font-size: 36px; line-height: 1.1; }
+.kv.kv6 { border: 0; border-top: 2px solid var(--text); border-bottom: 1px solid var(--line); border-radius: 0; }
+.kv.kv6 b { font-size: 30px; }
+.pull { font-family: var(--serif); font-style: italic; font-size: 19px; line-height: 1.45; margin: 4px 0 8px; padding: 0 4px; }
+/* Abschlusskarte nach dem Training */
+.finish-card { background: var(--hero-bg); border-radius: var(--r); padding: 26px 20px 22px; text-align: center; box-shadow: 0 10px 30px rgba(20, 34, 26, .22);
+  --text: #f3ecdc; --muted: #c9c0a8; --line: rgba(243, 236, 220, .18); --ochre: #d9bb80; color: var(--text); }
+.finish-card .emblem { width: 52px; height: 55px; margin: 0 auto 10px; display: block; color: #f3ecdc; --ochre: #c9a564; }
+.fc-eye { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.fc-title { font-family: var(--serif); font-size: 32px; font-weight: 500; line-height: 1.1; margin: 6px 0 4px; }
+.finish-card .kv { border-color: var(--line); margin: 16px 0 14px; }
+.finish-card .kv span { color: var(--muted); }
+.fc-prs { text-align: left; border-top: 1px solid var(--line); padding-top: 14px; }
+.fc-prs .fc-eye { color: var(--ochre); margin-bottom: 6px; }
+.fc-pr { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; }
+.fc-pr .t { font-family: var(--serif); font-size: 17px; }
+.fc-pr .s { font-size: 13.5px; color: var(--muted); }
+.fc-note { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .timer .ring .rv { transition: none; } }
+.sugg .v { font-size: 20px; }
+.pull .ns { font-family: var(--sans); font-style: normal; font-size: .92em; }
