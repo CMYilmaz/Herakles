@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const C = window.Core, LIB = window.Library, AN = window.Anim;
-  const VERSION = '2.5.0';
+  const VERSION = '2.5.1';
   const $ = (sel, el) => (el || document).querySelector(sel);
   const esc = (s) => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const now = () => Date.now();
@@ -66,22 +66,72 @@
     clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600);
   }
   let stopAnim = null, lastCheck = 0, lastCheckKey = '';
+  // Schließen per ×, Hintergrund oder Wischen: offene Rückfragen gelten als „Nein“.
+  function dismissSheet(opts) { if (pendingConfirm) { pendingConfirm(false); pendingConfirm = null; } closeSheet(opts); }
+  // Nach unten wischen schließt das Fenster: an der Griffleiste immer, im Inhalt, sobald er ganz oben steht.
+  function initSheetDrag() {
+    const root = $('#sheet-root');
+    let st = null;
+    const reset = () => {
+      if (!st) return;
+      const { sh, bg } = st; st = null;
+      sh.style.transition = 'transform .22s cubic-bezier(.2,.7,.2,1)'; sh.style.transform = '';
+      if (bg) { bg.style.transition = 'background-color .22s'; bg.style.backgroundColor = ''; }
+      setTimeout(() => { sh.style.transition = ''; if (bg) bg.style.transition = ''; }, 240);
+    };
+    root.addEventListener('touchstart', (ev) => {
+      const sh = ev.target.closest && ev.target.closest('.sheet');
+      if (!sh || ev.touches.length !== 1 || ev.target.closest('input, textarea, select')) { st = null; return; }
+      const t = ev.touches[0];
+      st = { sh, bg: sh.parentElement, x0: t.clientX, y0: t.clientY, dy: 0, top: !!ev.target.closest('.sheet-top'), atTop: sh.scrollTop <= 0, on: false, ly: t.clientY, lt: ev.timeStamp, v: 0 };
+    }, { passive: true });
+    root.addEventListener('touchmove', (ev) => {
+      if (!st) return;
+      const t = ev.touches[0], dx = t.clientX - st.x0, dy = t.clientY - st.y0;
+      if (!st.on) {
+        // iOS entscheidet beim ersten Zug, ob gescrollt wird: Zug nach unten am oberen Rand sofort abfangen
+        const canDrag = dy > 0 && Math.abs(dy) >= Math.abs(dx) && (st.top || (st.atTop && st.sh.scrollTop <= 0));
+        if (canDrag && ev.cancelable) ev.preventDefault();
+        if (Math.abs(dy) < 6 && Math.abs(dx) < 6) return;
+        if (dy <= 0 || Math.abs(dx) > Math.abs(dy) || !(st.top || (st.atTop && st.sh.scrollTop <= 0))) { st = null; return; }
+        st.on = true; st.y0 = t.clientY; st.sh.style.animation = 'none'; st.sh.style.transition = 'none';
+      }
+      ev.preventDefault();
+      st.dy = Math.max(0, t.clientY - st.y0);
+      const dt = ev.timeStamp - st.lt; if (dt > 0) st.v = (t.clientY - st.ly) / dt;
+      st.ly = t.clientY; st.lt = ev.timeStamp;
+      st.sh.style.transform = 'translateY(' + st.dy + 'px)';
+      if (st.bg) st.bg.style.backgroundColor = 'rgba(8, 10, 8, ' + (0.6 * Math.max(0, 1 - st.dy / 400)).toFixed(3) + ')';
+    }, { passive: false });
+    const end = () => {
+      if (!st) return;
+      if (!st.on) { st = null; return; }
+      const close = st.dy > Math.min(140, st.sh.offsetHeight * 0.25) || (st.dy > 24 && st.v > 0.5);
+      if (close) { const y = st.dy; st = null; dismissSheet({ fromY: y }); } else reset();
+    };
+    root.addEventListener('touchend', end);
+    root.addEventListener('touchcancel', reset);
+  }
   function sheet(html, opts) {
     if (stopAnim) { stopAnim(); stopAnim = null; }
     const root = $('#sheet-root'); sheetGen++;
-    root.innerHTML = '<div class="sheet-bg" data-a="sheet-bg"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>' + html + '</div></div>';
+    root.innerHTML = '<div class="sheet-bg" data-a="sheet-bg"><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-top"><div class="grab"></div><button class="sheet-x" data-a="sheet-dismiss" aria-label="Schließen">×</button></div>' + html + '</div></div>';
     if (opts && opts.onOpen) opts.onOpen(root);
   }
   let sheetGen = 0;
-  function closeSheet() {
+  function closeSheet(opts) {
     if (stopAnim) { stopAnim(); stopAnim = null; }
     const root = $('#sheet-root'), bg = root.firstElementChild;
     if (!bg || reduceMotion() || !bg.animate) { root.innerHTML = ''; return; }
     const g = ++sheetGen;
     bg.style.pointerEvents = 'none'; bg.removeAttribute('data-a');
     const sh = bg.querySelector('.sheet'); if (sh) sh.removeAttribute('role');
-    try { bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-in', fill: 'forwards' }); if (sh) sh.animate([{ transform: 'none' }, { transform: 'translateY(24px)' }], { duration: 140, easing: 'ease-in', fill: 'forwards' }); } catch (e) { /* egal */ }
-    setTimeout(() => { if (g === sheetGen && root.firstElementChild === bg) root.innerHTML = ''; }, 150);
+    const fromY = (opts && opts.fromY) || 0, dur = fromY ? 180 : 140;
+    try {
+      bg.animate([{ opacity: fromY ? Math.max(0, 1 - fromY / 400) : 1 }, { opacity: 0 }], { duration: dur, easing: 'ease-in', fill: 'forwards' });
+      if (sh) sh.animate([{ transform: 'translateY(' + fromY + 'px)' }, { transform: fromY ? 'translateY(100%)' : 'translateY(24px)' }], { duration: dur, easing: 'ease-in', fill: 'forwards' });
+    } catch (e) { /* egal */ }
+    setTimeout(() => { if (g === sheetGen && root.firstElementChild === bg) root.innerHTML = ''; }, dur + 10);
   }
   function confirmBox(title, text, okLabel, danger) {
     return new Promise((res) => {
@@ -676,7 +726,8 @@
       sheet('<h3>Welcher Tag?</h3><div class="list">' + S.days.map((d) => '<button class="li" data-a="start-day" data-day="' + d.id + '"><div class="grow"><div class="t">' + esc(d.name) + '</div><div class="s">' + d.exerciseIds.filter((id) => S.exercises[id] && !S.exercises[id].archived).length + ' Übungen</div></div>›</button>').join('') + '</div>');
     },
     'start-day'(el) { closeSheet(); A.start(el); },
-    'sheet-bg'(el, ev) { if (ev.target === el) { if (pendingConfirm) { pendingConfirm(false); pendingConfirm = null; } closeSheet(); } },
+    'sheet-bg'(el, ev) { if (ev.target === el) dismissSheet(); },
+    'sheet-dismiss'() { dismissSheet(); },
     'cf-yes'() { const p = pendingConfirm; pendingConfirm = null; closeSheet(); if (p) p(true); },
     'cf-no'() { const p = pendingConfirm; pendingConfirm = null; closeSheet(); if (p) p(false); },
     'deload-yes'() { C.acceptDeload(S, now()); save(); toast('Deload-Woche aktiv'); render(); },
@@ -957,6 +1008,7 @@
   }
 
   // ================= Ereignisse =================
+  initSheetDrag();
   document.addEventListener('click', (ev) => {
     const el = ev.target.closest('[data-a]');
     if (!el || el.disabled) return;

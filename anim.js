@@ -16,44 +16,44 @@
   const benchProps = [{ k: 'line', p: [52, 38, 166, 38], w: 6 }, { k: 'line', p: [68, 38, 68, 0], w: 4 }, { k: 'line', p: [150, 38, 150, 0], w: 4 }];
   const seat = (x1, x2, y) => [{ k: 'line', p: [x1, y, x2, y], w: 6 }, { k: 'line', p: [(x1 + x2) / 2, y, (x1 + x2) / 2, 0], w: 4 }];
   const SPECS = {
-    bench: { view: S, anchor: ['hip', 150, 44], A: { t: 180, ua: 90, fa: 90, th: -15, sh: 260, ft: 0 }, B: { ua: -45, fa: 110 }, props: benchProps.concat([{ k: 'plate', at: 'wrist' }]) },
-    incline: { view: S, anchor: ['hip', 140, 40], A: { t: 145, ua: 100, fa: 100, th: -5, sh: 265, ft: 0 }, B: { ua: -60, fa: 95 }, props: [{ k: 'line', p: [150, 32, 86, 78], w: 6 }, { k: 'line', p: [146, 32, 174, 32], w: 6 }, { k: 'line', p: [152, 32, 152, 0], w: 4 }, { k: 'db', at: 'wrist' }] },
+    bench: { view: S, anchor: ['hip', 150, 44], A: { t: 180, hx: 0, hy: 58, eb: -1, th: -15, sh: 260, ft: 0 }, B: { hx: 20, hy: 10 }, props: benchProps.concat([{ k: 'plate', at: 'wrist' }]) },
+    incline: { view: S, anchor: ['hip', 140, 40], A: { t: 145, hx: 2, hy: 57, eb: -1, th: -5, sh: 265, ft: 0 }, B: { hx: 13, hy: 7 }, props: [{ k: 'line', p: [150, 32, 86, 78], w: 6 }, { k: 'line', p: [146, 32, 174, 32], w: 6 }, { k: 'line', p: [152, 32, 152, 0], w: 4 }, { k: 'db', at: 'wrist' }] },
     chestpress: { view: S, anchor: ['hip', 105, 42], A: { t: 100, ua: 230, fa: 20, th: 0, sh: 268, ft: 0 }, B: { ua: 362, fa: 2 }, props: [{ k: 'line', p: [96, 36, 86, 112], w: 7 }, { k: 'line', p: [92, 36, 132, 36], w: 6 }, { k: 'line', p: [100, 36, 100, 0], w: 4 }, { k: 'handle', at: 'wrist' }] },
     fly: { view: F, anchor: ['pelvis', 120, 50], A: { t: 90, ua: 0, su: 1, fa: 90, sf: 1, th: 272, ths: 0.35, sh: 270 }, B: { su: -0.5 }, props: [{ k: 'line', p: [96, 46, 144, 46], w: 6 }, { k: 'handle', at: 'wristR' }, { k: 'handle', at: 'wristL' }] },
-    cablefly: { view: F, anchor: ['pelvis', 120, 72], A: { t: 90, ua: 10, su: 1, fa: 10, sf: 1, th: 274, sh: 270 }, B: { ua: -30, su: -0.35, fa: -30, sf: -0.35 }, props: [{ k: 'cableR', from: [228, 150] }, { k: 'cableL', from: [12, 150] }, { k: 'handle', at: 'wristR' }, { k: 'handle', at: 'wristL' }] },
+    cablefly: { view: F, anchor: ['pelvis', 120, 72], A: { t: 90, ua: 10, su: 1, fa: 10, sf: 1, th: 274, sh: 270 }, B: { ua: -30, su: -0.25, fa: -30, sf: -0.3 }, props: [{ k: 'cableR', from: [228, 150] }, { k: 'cableL', from: [12, 150] }, { k: 'handle', at: 'wristR' }, { k: 'handle', at: 'wristL' }] },
     reversefly: { view: F, anchor: ['pelvis', 120, 50], A: { t: 90, ua: 0, su: -0.5, fa: 0, sf: -0.5, th: 272, ths: 0.35, sh: 270 }, B: { su: 1, sf: 1 }, props: [{ k: 'line', p: [96, 46, 144, 46], w: 6 }, { k: 'handle', at: 'wristR' }, { k: 'handle', at: 'wristL' }], note: 'Ansicht von hinten', back: true },
-    dips: { view: S, anchor: ['wrist', 130, 74], A: { t: 84, ua: 268, fa: 270, th: 255, sh: 215, ft: 300 }, B: { t: 70, ua: 195, fa: 290, th: 250, sh: 208 }, props: [{ k: 'line', p: [110, 74, 152, 74], w: 5 }, { k: 'line', p: [146, 74, 146, 0], w: 4 }] },
-    pushup: { view: S, anchor: ['wrist', 142, 2], A: { t: 27, ua: 268, fa: 270, th: 207, sh: 207, ft: 240 }, B: { t: 13, ua: 200, fa: 320, th: 193, sh: 193, ft: 228 }, props: [] },
-    pullup: { view: S, scale: 0.78, anchor: ['wrist', 122, 138], A: { t: 95, ua: 88, fa: 90, th: 262, sh: 215, ft: 300 }, B: { t: 102, ua: -102, fa: 82, th: 255, sh: 210 }, props: [{ k: 'line', p: [92, 138, 160, 138], w: 4 }] },
-    latpull: { view: S, anchor: ['hip', 112, 48], A: { t: 95, ua: 96, fa: 96, th: 2, sh: 268, ft: 0 }, B: { t: 105, ua: -112, fa: 82 }, props: [{ k: 'cable', from: [118, 172] }, { k: 'bar', at: 'wrist' }, { k: 'line', p: [92, 42, 132, 42], w: 6 }, { k: 'line', p: [112, 42, 112, 0], w: 4 }, { k: 'line', p: [140, 64, 158, 64], w: 6 }] },
+    dips: { view: S, scale: 0.86, anchor: ['wrist', 128, 80], A: { t: 86, hx: 2, hy: -57, eb: -1, th: 250, sh: 218, ft: 300 }, B: { t: 68, hx: -8, hy: -30, th: 238, sh: 204 }, props: [{ k: 'line', p: [108, 80, 150, 80], w: 5 }, { k: 'line', p: [144, 80, 144, 0], w: 4 }] },
+    pushup: { view: S, anchor: ['wrist', 142, 4], A: { t: 27, ua: 268, fa: 270, th: 207, sh: 207, ft: 212 }, B: { t: 13, ua: 200, fa: 320, th: 193, sh: 193, ft: 202 }, props: [] },
+    pullup: { view: F, scale: 0.62, anchor: ['wristR', 143, 135], A: { t: 90, hx: 20, hy: 54, eb: -1, th: 269, sh: 271 }, B: { hx: 22, hy: 6 }, props: [{ k: 'line', p: [82, 135, 158, 135], w: 4 }], note: 'Ansicht von vorn' },
+    latpull: { view: F, anchor: ['pelvis', 120, 47], A: { t: 90, ua: 60, fa: 64, th: 272, ths: 0.35, sh: 270, shs: 0.9 }, B: { ua: -68, fa: 80 }, props: [{ k: 'cableC', from: [120, 172] }, { k: 'line', p: [98, 43, 142, 43], w: 6 }, { k: 'line', p: [120, 43, 120, 0], w: 4 }, { k: 'barLR', ext: 10 }], note: 'Ansicht von vorn' },
     cablerow: { view: S, anchor: ['hip', 88, 30], A: { t: 72, ua: 2, fa: 2, th: 14, sh: -12, ft: 80 }, B: { t: 96, ua: -162, fa: 8 }, props: [{ k: 'cable', from: [218, 42] }, { k: 'handle', at: 'wrist' }, { k: 'line', p: [62, 24, 112, 24], w: 6 }, { k: 'line', p: [170, 12, 170, 50], w: 5 }] },
-    machinerow: { view: S, anchor: ['hip', 92, 40], A: { t: 80, ua: 356, fa: 356, th: 2, sh: 268, ft: 0 }, B: { t: 86, ua: 192, fa: 6 }, props: [{ k: 'line', p: [112, 70, 116, 104], w: 7 }, { k: 'line', p: [72, 34, 112, 34], w: 6 }, { k: 'line', p: [92, 34, 92, 0], w: 4 }, { k: 'handle', at: 'wrist' }, { k: 'line', p: [176, 20, 176, 130], w: 4 }] },
+    machinerow: { view: S, anchor: ['hip', 92, 40], A: { t: 80, hx: 54, hy: -6, eb: -1, th: 2, sh: 268, ft: 0 }, B: { t: 88, hx: 8, hy: -12 }, props: [{ k: 'line', p: [112, 70, 116, 104], w: 7 }, { k: 'line', p: [72, 34, 112, 34], w: 6 }, { k: 'line', p: [92, 34, 92, 0], w: 4 }, { k: 'handle', at: 'wrist' }, { k: 'line', p: [176, 20, 176, 130], w: 4 }] },
     bbrow: { view: S, anchor: ['ankle', 112, 2], A: { t: 28, ua: 268, fa: 270, th: 288, sh: 262, ft: 0 }, B: { ua: 205, fa: 268 }, props: [{ k: 'plate', at: 'wrist' }] },
     dbrow: { view: S, anchor: ['ankle', 112, 2], A: { t: 22, ua: 270, fa: 270, ua2: 290, fa2: 290, th: 285, sh: 262, ft: 0 }, B: { ua: 200, fa: 268 }, props: [{ k: 'db', at: 'wrist' }, { k: 'line', p: [150, 46, 196, 46], w: 6 }, { k: 'line', p: [176, 46, 176, 0], w: 4 }] },
-    hyperext: { view: S, anchor: ['ankle', 190, 40], A: { t: 250, ua: 95, fa: 240, th: -30, sh: -30, ft: 60 }, B: { t: 150, ua: -5, fa: 140 }, props: [{ k: 'line', p: [134, 68, 182, 40], w: 7 }, { k: 'line', p: [182, 40, 196, 0], w: 4 }, { k: 'roller', at: 'ankle' }] },
+    hyperext: { view: S, anchor: ['ankle', 192, 54], A: { t: 242, uaR: 165, faR: -150, th: -30, sh: -30, ft: 60 }, B: { t: 150 }, props: [{ k: 'line', p: [136, 84, 184, 56], w: 7 }, { k: 'line', p: [184, 56, 198, 0], w: 4 }, { k: 'roller', at: 'ankle' }] },
     facepull: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, ua: 8, su: -0.25, fa: 8, sf: -0.25, th: 273, sh: 270 }, B: { su: 1, fa: 100, sf: 0.75 }, props: [{ k: 'handle', at: 'wristR' }, { k: 'handle', at: 'wristL' }], note: 'Ansicht von vorn' },
-    ohp: { view: S, anchor: ['hip', 114, 44], A: { t: 92, ua: 252, fa: 96, th: 0, sh: 268, ft: 0 }, B: { ua: 452, fa: 92 }, props: [{ k: 'line', p: [104, 40, 106, 108], w: 7 }, { k: 'line', p: [96, 38, 136, 38], w: 6 }, { k: 'line', p: [116, 38, 116, 0], w: 4 }, { k: 'db', at: 'wrist' }] },
-    latraise: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, ua: 276, fa: 279, su: 1, sf: 1, th: 273, sh: 270 }, B: { ua: 358, fa: 2 }, props: [{ k: 'db', at: 'wristR' }, { k: 'db', at: 'wristL' }] },
+    ohp: { view: F, anchor: ['pelvis', 120, 47], A: { t: 90, ua: 0, fa: 90, th: 272, ths: 0.35, sh: 270, shs: 0.9 }, B: { ua: 66, fa: 86 }, props: [{ k: 'line', p: [98, 43, 142, 43], w: 6 }, { k: 'line', p: [120, 43, 120, 0], w: 4 }, { k: 'db', at: 'wristR' }, { k: 'db', at: 'wristL' }], note: 'Ansicht von vorn' },
+    latraise: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, ua: 276, fa: 279, su: 1, sf: 1, th: 273, sh: 270 }, B: { ua: 358, fa: 362 }, props: [{ k: 'db', at: 'wristR' }, { k: 'db', at: 'wristL' }] },
     curl: { view: S, anchor: ['ankle', 110, 2], A: { t: 90, ua: 268, fa: 272, th: 271, sh: 269, ft: 0 }, B: { ua: 276, fa: 472 }, props: [{ k: 'db', at: 'wrist' }] },
     preacher: { view: S, anchor: ['hip', 100, 46], A: { t: 80, ua: 318, fa: 306, th: 0, sh: 268, ft: 0 }, B: { fa: 470 }, props: [{ k: 'line', p: [118, 92, 146, 66], w: 7 }, { k: 'line', p: [140, 66, 140, 0], w: 4 }, { k: 'line', p: [82, 40, 118, 40], w: 6 }, { k: 'handle', at: 'wrist' }] },
     pushdown: { view: S, anchor: ['ankle', 100, 2], A: { t: 84, ua: 272, fa: 58, th: 272, sh: 268, ft: 0 }, B: { fa: -80 }, props: [{ k: 'cable', from: [150, 172] }, { k: 'handle', at: 'wrist' }, { k: 'line', p: [150, 0, 150, 172], w: 3 }] },
     overheadext: { view: S, scale: 0.85, anchor: ['ankle', 120, 2], A: { t: 80, ua: 112, fa: 250, th: 280, sh: 266, ft: 0, th2: 262, sh2: 262 }, B: { fa: 108 }, props: [{ k: 'cable', from: [34, 96] }, { k: 'handle', at: 'wrist' }] },
     squat: { view: S, anchor: ['ankle', 118, 2], A: { t: 90, ua: 240, fa: 100, th: 272, sh: 268, ft: 0 }, B: { t: 58, ua: 208, fa: 68, th: 352, sh: 248 }, props: [{ k: 'plate', at: 'back' }] },
     goblet: { view: S, anchor: ['ankle', 118, 2], A: { t: 90, ua: 285, fa: 70, th: 272, sh: 268, ft: 0 }, B: { t: 64, ua: 262, fa: 42, th: 352, sh: 248 }, props: [{ k: 'kb', at: 'wrist' }] },
-    legpress: { view: S, anchor: ['hip', 74, 40], A: { t: 128, ua: 285, fa: 330, th: 58, sh: -34, ft: 46 }, B: { th: 40, sh: 40, ft: 128 }, props: [{ k: 'line', p: [78, 32, 40, 82], w: 7 }, { k: 'line', p: [66, 30, 98, 30], w: 6 }, { k: 'line', p: [110, 26, 232, 128], w: 3 }, { k: 'foot', at: 'ankle', ang: -50 }] },
-    calfpress: { view: S, anchor: ['hip', 74, 40], A: { t: 128, ua: 285, fa: 330, th: 40, sh: 40, ft: 132 }, B: { ft: 64 }, props: [{ k: 'line', p: [78, 32, 40, 82], w: 7 }, { k: 'line', p: [66, 30, 98, 30], w: 6 }, { k: 'line', p: [110, 26, 232, 128], w: 3 }, { k: 'foot', at: 'toe', ang: -50 }] },
+    legpress: { view: S, anchor: ['hip', 74, 40], A: { t: 128, ua: 285, fa: 330, ax: 38.3, ay: 32.1, kb: 1, ft: 130 }, B: { ax: 56.6, ay: 47.5 }, props: [{ k: 'line', p: [78, 32, 40, 82], w: 7 }, { k: 'line', p: [66, 30, 98, 30], w: 6 }, { k: 'line', p: [115, 53, 172, 101], w: 3 }, { k: 'foot', at: 'ankle', ang: -50, dx: 5.4, dy: -4.5 }] },
+    calfpress: { view: S, anchor: ['hip', 74, 40], A: { t: 128, ua: 285, fa: 330, ax: 56.6, ay: 47.5, kb: 1, ft: 130 }, B: { ft: 80 }, props: [{ k: 'line', p: [78, 32, 40, 82], w: 7 }, { k: 'line', p: [66, 30, 98, 30], w: 6 }, { k: 'line', p: [120, 57, 178, 106], w: 3 }, { k: 'foot', at: 'toe', ang: -50, dx: 3.8, dy: -3.2 }] },
     legext: { view: S, anchor: ['hip', 100, 56], A: { t: 96, ua: 280, fa: 300, th: 0, sh: 266, ft: 356 }, B: { sh: 366, ft: 456 }, props: [{ k: 'line', p: [90, 50, 92, 116], w: 7 }, { k: 'line', p: [84, 50, 140, 50], w: 6 }, { k: 'line', p: [100, 50, 100, 0], w: 4 }, { k: 'roller', at: 'ankle' }] },
     legcurl: { view: S, anchor: ['hip', 96, 56], A: { t: 100, ua: 280, fa: 300, th: 0, sh: 360, ft: 450 }, B: { sh: 250, ft: 340 }, props: [{ k: 'line', p: [86, 50, 88, 116], w: 7 }, { k: 'line', p: [80, 50, 136, 50], w: 6 }, { k: 'line', p: [96, 50, 96, 0], w: 4 }, { k: 'roller', at: 'ankle', dy: 7 }] },
     rdl: { view: S, anchor: ['ankle', 116, 2], A: { t: 90, ua: 270, fa: 270, th: 272, sh: 268, ft: 0 }, B: { t: 22, th: 284, sh: 264 }, props: [{ k: 'plate', at: 'wrist' }] },
-    hipthrust: { view: S, anchor: ['shoulder', 80, 40], A: { t: 147, ua: 300, fa: 20, th: 40, sh: 298, ft: 0 }, B: { t: 180, ua: 330, fa: 10, th: 0, sh: 272 }, props: [{ k: 'line', p: [36, 36, 88, 36], w: 6 }, { k: 'line', p: [50, 36, 50, 0], w: 4 }, { k: 'plate', at: 'hip', dy: 9 }] },
-    splitsquat: { view: S, anchor: ['ankle', 128, 2], A: { t: 90, ua: 270, fa: 270, th: 278, sh: 266, ft: 0, th2: 232, sh2: 205, ft2: 170 }, B: { t: 82, th: 350, sh: 256, th2: 262, sh2: 196 }, props: [{ k: 'db', at: 'wrist' }, { k: 'line', p: [26, 36, 72, 36], w: 6 }, { k: 'line', p: [48, 36, 48, 0], w: 4 }] },
-    calfraise: { view: S, anchor: ['toe', 122, 10], A: { t: 90, ua: 240, fa: 100, th: 271, sh: 269, ft: 22 }, B: { ft: -32 }, props: [{ k: 'line', p: [100, 6, 150, 6], w: 6 }, { k: 'pad', at: 'shoulder' }] },
+    hipthrust: { view: S, anchor: ['shoulder', 80, 50], A: { t: 147, ua: 300, fa: 20, th: 40, sh: 298, ft: 0 }, B: { t: 180, ua: 330, fa: 10, th: 0, sh: 272 }, props: [{ k: 'line', p: [36, 46, 88, 46], w: 6 }, { k: 'line', p: [50, 46, 50, 0], w: 4 }, { k: 'plate', at: 'hip', dy: 9 }] },
+    splitsquat: { view: S, anchor: ['ankle', 130, 2], foot2: [62, 42], A: { t: 88, ua: 270, fa: 270, th: 278, sh: 266, ft: 0, ft2: 182 }, B: { t: 80, th: 346, sh: 258 }, props: [{ k: 'db', at: 'wrist' }, { k: 'line', p: [24, 34, 74, 34], w: 6 }, { k: 'line', p: [46, 34, 46, 0], w: 4 }] },
+    calfraise: { view: S, scale: 0.86, anchor: ['toe', 122, 9], A: { t: 90, ua: 240, fa: 100, th: 271, sh: 269, ft: 22 }, B: { ft: -32 }, props: [{ k: 'line', p: [100, 5, 150, 5], w: 6 }, { k: 'pad', at: 'shoulder' }] },
     swing: { view: S, anchor: ['ankle', 112, 2], A: { t: 36, ua: 250, fa: 246, th: 292, sh: 264, ft: 0 }, B: { t: 92, ua: 362, fa: 362, th: 272, sh: 268 }, props: [{ k: 'kb', at: 'wrist' }] },
     situp: { view: S, anchor: ['hip', 118, 8], A: { t: 176, ua: 18, fa: 186, th: 55, sh: 300, ft: 0 }, B: { t: 110, ua: -50, fa: 122 }, props: [{ k: 'line', p: [30, 2, 220, 2], w: 4 }] },
     twist: { view: F, anchor: ['pelvis', 120, 30], A: { t: 98, ts: 0.85, hand: [-36, 30], th: 66, ths: 0.5, sh: 285, shs: 1 }, B: { t: 82, hand: [36, 30] }, props: [{ k: 'kb', at: 'hand' }, { k: 'line', p: [60, 2, 180, 2], w: 4 }] },
-    hangraise: { view: S, scale: 0.78, anchor: ['wrist', 120, 140], A: { t: 90, ua: 90, fa: 90, th: 268, sh: 268, ft: 0 }, B: { th: 364, sh: 364, ft: 454 }, props: [{ k: 'line', p: [92, 140, 152, 140], w: 4 }] },
-    cablecrunch: { view: S, anchor: ['knee', 120, 4], A: { t: 82, ua: 130, fa: 300, th: 270, sh: 180, ft: 270 }, B: { t: 18, ua: 70, fa: 230 }, props: [{ k: 'cable', from: [150, 172] }, { k: 'handle', at: 'wrist' }] },
-    plank: { view: S, anchor: ['ankle', 40, 2], A: { t: 14, ua: 270, fa: 0, th: 194, sh: 194, ft: 240 }, B: { t: 16 }, props: [] }
+    hangraise: { view: S, scale: 0.66, anchor: ['wrist', 120, 150], A: { t: 90, ua: 90, fa: 90, th: 268, sh: 268, ft: 310 }, B: { th: 364, sh: 364, ft: 400 }, props: [{ k: 'line', p: [92, 150, 150, 150], w: 4 }] },
+    cablecrunch: { view: S, anchor: ['knee', 120, 4], A: { t: 82, ua: 130, fa: 300, th: 270, sh: 180, ft: 192 }, B: { t: 18, ua: 70, fa: 230 }, props: [{ k: 'cable', from: [150, 172] }, { k: 'handle', at: 'wrist' }] },
+    plank: { view: S, anchor: ['ankle', 40, 8], A: { t: 11, ua: 270, fa: 0, th: 194, sh: 194, ft: 228 }, B: { t: 13 }, props: [] }
   };
 
   // ---------- Kinematik ----------
@@ -74,15 +74,20 @@
     j.neck = add(j.shoulder, dir(p.t), 2 * sc);
     j.back = add(add(j.shoulder, dir(p.t + 90), 9 * sc), dir(p.t), 1 * sc); // Stange auf dem oberen Rücken
     j.head = add(j.shoulder, dir(p.hd !== undefined ? p.hd : p.t), L('neck'));
-    j.elbow = add(j.shoulder, dir(p.ua), L('U'));
-    j.wrist = add(j.elbow, dir(p.fa), L('F'));
-    j.knee = add(j.hip, dir(p.th), L('Th'));
-    j.ankle = add(j.knee, dir(p.sh), L('Sh'));
+    // Arme: entweder Winkel (absolut oder relativ zum Rumpf) oder Handziel relativ zur Schulter (IK)
+    const uaA = p.uaR !== undefined ? p.t + p.uaR : p.ua;
+    const faA = p.faR !== undefined ? uaA + p.faR : p.fa;
+    if (p.hx !== undefined) [j.elbow, j.wrist] = ik2(j.shoulder, [j.shoulder[0] + p.hx * sc, j.shoulder[1] + p.hy * sc], L('U'), L('F'), p.eb || -1);
+    else { j.elbow = add(j.shoulder, dir(uaA), L('U')); j.wrist = add(j.elbow, dir(faA), L('F')); }
+    if (p.ax !== undefined) [j.knee, j.ankle] = ik2(j.hip, [p.ax * sc, p.ay * sc], L('Th'), L('Sh'), p.kb || 1); // Fußziel relativ zur Hüfte
+    else { j.knee = add(j.hip, dir(p.th), L('Th')); j.ankle = add(j.knee, dir(p.sh), L('Sh')); }
     j.toe = add(j.ankle, dir(p.ft), L('Ft'));
-    const ua2 = p.ua2 !== undefined ? p.ua2 : p.ua, fa2 = p.fa2 !== undefined ? p.fa2 : p.fa;
+    const ua2 = p.ua2 !== undefined ? p.ua2 : uaA, fa2 = p.fa2 !== undefined ? p.fa2 : faA;
     const th2 = p.th2 !== undefined ? p.th2 : p.th, sh2 = p.sh2 !== undefined ? p.sh2 : p.sh, ft2 = p.ft2 !== undefined ? p.ft2 : p.ft;
-    j.elbow2 = add(j.shoulder, dir(ua2), L('U')); j.wrist2 = add(j.elbow2, dir(fa2), L('F'));
-    j.knee2 = add(j.hip, dir(th2), L('Th')); j.ankle2 = add(j.knee2, dir(sh2), L('Sh')); j.toe2 = add(j.ankle2, dir(ft2), L('Ft'));
+    if (p.hx !== undefined && p.ua2 === undefined) { j.elbow2 = j.elbow; j.wrist2 = j.wrist; }
+    else { j.elbow2 = add(j.shoulder, dir(ua2), L('U')); j.wrist2 = add(j.elbow2, dir(fa2), L('F')); }
+    if (p.ax !== undefined && p.th2 === undefined) { j.knee2 = j.knee; j.ankle2 = j.ankle; j.toe2 = add(j.ankle2, dir(ft2), L('Ft')); }
+    else { j.knee2 = add(j.hip, dir(th2), L('Th')); j.ankle2 = add(j.knee2, dir(sh2), L('Sh')); j.toe2 = add(j.ankle2, dir(ft2), L('Ft')); }
     return j;
   }
   function ik2(s, target, a, b, bendSign) {
@@ -102,10 +107,14 @@
     const sc0 = add(j.pelvis, dir(p.t), tlen);
     const perp = [Math.cos(rad(p.t - 90)), Math.sin(rad(p.t - 90))];
     j.sc = sc0; j.head = add(sc0, dir(p.t), L('neck'));
-    j.shoulderR = [sc0[0] + perp[0] * 17, sc0[1] + perp[1] * 17];
-    j.shoulderL = [sc0[0] - perp[0] * 17, sc0[1] - perp[1] * 17];
-    j.hipR = [9, 0]; j.hipL = [-9, 0];
-    if (p.hand) {
+    j.shoulderR = [sc0[0] + perp[0] * 17 * sc, sc0[1] + perp[1] * 17 * sc];
+    j.shoulderL = [sc0[0] - perp[0] * 17 * sc, sc0[1] - perp[1] * 17 * sc];
+    j.hipR = [9 * sc, 0]; j.hipL = [-9 * sc, 0];
+    if (p.hx !== undefined) {
+      const eb = p.eb || -1;
+      [j.elbowR, j.wristR] = ik2(j.shoulderR, [j.shoulderR[0] + p.hx * sc, j.shoulderR[1] + p.hy * sc], L('U'), L('F'), eb);
+      [j.elbowL, j.wristL] = ik2(j.shoulderL, [j.shoulderL[0] - p.hx * sc, j.shoulderL[1] + p.hy * sc], L('U'), L('F'), -eb);
+    } else if (p.hand) {
       j.hand = [p.hand[0], p.hand[1]];
       [j.elbowR, j.wristR] = ik2(j.shoulderR, [j.hand[0] + 3, j.hand[1]], L('U') * 0.8, L('F') * 0.8, -1);
       [j.elbowL, j.wristL] = ik2(j.shoulderL, [j.hand[0] - 3, j.hand[1]], L('U') * 0.8, L('F') * 0.8, 1);
@@ -132,6 +141,10 @@
     const off = [ax - ref[0], ay - ref[1]];
     const out = {};
     for (const key of Object.keys(j)) out[key] = [j[key][0] + off[0], j[key][1] + off[1]];
+    if (spec.foot2) { // hinterer Fuß bleibt fest liegen (z. B. auf der Bank)
+      [out.knee2, out.ankle2] = ik2(out.hip, spec.foot2, LEN.Th * sc, LEN.Sh * sc, spec.foot2bend || 1);
+      out.toe2 = add(out.ankle2, dir(p.ft2 !== undefined ? p.ft2 : 180), LEN.Ft * sc);
+    }
     out._p = p;
     return out;
   }
@@ -156,6 +169,8 @@
       case 'cable': return seg(pr.from, j.wrist, 'cable', 1.5);
       case 'cableR': return seg(pr.from, j.wristR, 'cable', 1.5);
       case 'cableL': return seg(pr.from, j.wristL, 'cable', 1.5);
+      case 'barLR': { const a = j.wristL, b = j.wristR, e = pr.ext || 8; return seg([a[0] - e, a[1] + 1], [b[0] + e, b[1] + 1], 'eqd', 4); }
+      case 'cableC': return seg(pr.from, mid(j.wristL, j.wristR), 'cable', 1.5);
       default: return '';
     }
   }
@@ -302,8 +317,8 @@
   }
   function frame(spec, k) {
     const j = joints(spec, k);
-    const back = (spec.props || []).filter((p) => p.k === 'line' || p.k === 'cable' || p.k === 'cableR' || p.k === 'cableL').map((p) => propSvg(p, j)).join('');
-    const front = (spec.props || []).filter((p) => !(p.k === 'line' || p.k === 'cable' || p.k === 'cableR' || p.k === 'cableL')).map((p) => propSvg(p, j)).join('');
+    const back = (spec.props || []).filter((p) => p.k === 'line' || p.k === 'cable' || p.k === 'cableR' || p.k === 'cableL' || p.k === 'cableC').map((p) => propSvg(p, j)).join('');
+    const front = (spec.props || []).filter((p) => !(p.k === 'line' || p.k === 'cable' || p.k === 'cableR' || p.k === 'cableL' || p.k === 'cableC')).map((p) => propSvg(p, j)).join('');
     return '<line class="floor" x1="0" y1="' + G + '" x2="' + W + '" y2="' + G + '"/>' + back + figureSvg(spec, j) + front;
   }
   // Bewegungszyklus: Start halten → Bewegung → oben halten → zurück (exzentrisch langsamer)
@@ -323,7 +338,7 @@
     if (!e.animProps && !e.animExtra) return base;
     const weights = ['plate', 'db', 'kb', 'handle'];
     let props = base.props.map((p) => (e.animProps && weights.indexOf(p.k) >= 0 ? Object.assign({}, p, { k: e.animProps }) : p));
-    if (e.animExtra === 'kbHip') props = props.concat([{ k: 'kb', at: 'hip', dy: 10 }]);
+    if (e.animExtra === 'kbHip') props = props.concat([{ k: 'kb', at: base.view === F ? 'pelvis' : 'hip', dy: base.view === F ? -6 : 10 }]);
     return Object.assign({}, base, { props });
   }
   const getSpec = (s) => (typeof s === 'string' ? SPECS[s] : s);

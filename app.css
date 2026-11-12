@@ -208,8 +208,10 @@ details.card[open] summary { margin-bottom: 12px; }
 
 /* ---------- Sheet ---------- */
 .sheet-bg { position: fixed; inset: 0; z-index: 50; background: rgba(8, 10, 8, .6); display: flex; align-items: flex-end; justify-content: center; animation: fade .15s; }
-.sheet { width: 100%; max-width: 560px; max-height: 90vh; max-height: 90dvh; overflow: auto; background: var(--surface); border-radius: 10px 10px 0 0; border-top: 1px solid var(--line); padding: 10px 20px calc(var(--safe-b) + 18px); animation: up .2s ease-out; }
-.sheet .grab { width: 36px; height: 3px; border-radius: 2px; background: var(--line2); margin: 0 auto 14px; }
+.sheet { width: 100%; max-width: 560px; max-height: 90vh; max-height: 90dvh; overflow: auto; background: var(--surface); border-radius: 10px 10px 0 0; border-top: 1px solid var(--line); padding: 0 20px calc(var(--safe-b) + 18px); overscroll-behavior: contain; animation: up .2s ease-out; }
+.sheet .sheet-top { position: sticky; top: 0; z-index: 3; height: 44px; margin: 0 -20px 4px; background: var(--surface); display: flex; align-items: center; justify-content: center; touch-action: none; cursor: grab; }
+.sheet .grab { width: 40px; height: 4px; border-radius: 2px; background: var(--line2); }
+.sheet .sheet-x { position: absolute; right: 6px; top: 0; width: 44px; height: 44px; display: grid; place-items: center; font-size: 26px; font-weight: 300; line-height: 1; color: var(--muted); }
 .sheet h3 { margin: 0 0 12px; font-family: var(--serif); font-weight: 500; font-size: 24px; }
 .sheet .actions { display: flex; gap: 10px; margin-top: 16px; }
 .sheet .actions .btn { flex: 1; }
