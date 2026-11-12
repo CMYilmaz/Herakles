@@ -2,7 +2,9 @@
 (function () {
   'use strict';
   const C = window.Core, LIB = window.Library, AN = window.Anim;
-  const VERSION = '2.5.1';
+  const VERSION = '2.7.0';
+  // Markenzeichen: Lorbeerkranz mit H (Farben folgen dem Thema)
+  const EMBLEM = '<svg class="emblem" viewBox="8 8 84 88" aria-hidden="true"><g fill="currentColor"><ellipse cx="39.99" cy="85.89" rx="4.5" ry="1.85" transform="rotate(-192.0 39.99 85.89)"/><ellipse cx="37.74" cy="80.23" rx="4.5" ry="1.85" transform="rotate(-129.3 37.74 80.23)"/><ellipse cx="32.13" cy="82.59" rx="4.5" ry="1.85" transform="rotate(-178.5 32.13 82.59)"/><ellipse cx="31.26" cy="76.56" rx="4.5" ry="1.85" transform="rotate(-115.8 31.26 76.56)"/><ellipse cx="25.24" cy="77.55" rx="4.5" ry="1.85" transform="rotate(-165.0 25.24 77.55)"/><ellipse cx="25.81" cy="71.48" rx="4.5" ry="1.85" transform="rotate(-102.3 25.81 71.48)"/><ellipse cx="19.73" cy="71.04" rx="4.5" ry="1.85" transform="rotate(-151.5 19.73 71.04)"/><ellipse cx="21.69" cy="65.27" rx="4.5" ry="1.85" transform="rotate(-88.8 21.69 65.27)"/><ellipse cx="15.89" cy="63.42" rx="4.5" ry="1.85" transform="rotate(-138.0 15.89 63.42)"/><ellipse cx="19.14" cy="58.27" rx="4.5" ry="1.85" transform="rotate(-75.3 19.14 58.27)"/><ellipse cx="13.93" cy="55.11" rx="4.5" ry="1.85" transform="rotate(-124.5 13.93 55.11)"/><ellipse cx="18.30" cy="50.86" rx="4.5" ry="1.85" transform="rotate(-61.8 18.30 50.86)"/><ellipse cx="13.97" cy="46.58" rx="4.5" ry="1.85" transform="rotate(-111.0 13.97 46.58)"/><ellipse cx="19.21" cy="43.47" rx="4.5" ry="1.85" transform="rotate(-48.3 19.21 43.47)"/><ellipse cx="16.00" cy="38.29" rx="4.5" ry="1.85" transform="rotate(-97.5 16.00 38.29)"/><ellipse cx="21.82" cy="36.49" rx="4.5" ry="1.85" transform="rotate(-34.8 21.82 36.49)"/><ellipse cx="19.91" cy="30.70" rx="4.5" ry="1.85" transform="rotate(-84.0 19.91 30.70)"/><ellipse cx="25.99" cy="30.31" rx="4.5" ry="1.85" transform="rotate(-21.3 25.99 30.31)"/><ellipse cx="60.01" cy="85.89" rx="4.5" ry="1.85" transform="rotate(-348.0 60.01 85.89)"/><ellipse cx="62.26" cy="80.23" rx="4.5" ry="1.85" transform="rotate(-410.8 62.26 80.23)"/><ellipse cx="67.87" cy="82.59" rx="4.5" ry="1.85" transform="rotate(-361.5 67.87 82.59)"/><ellipse cx="68.74" cy="76.56" rx="4.5" ry="1.85" transform="rotate(-424.3 68.74 76.56)"/><ellipse cx="74.76" cy="77.55" rx="4.5" ry="1.85" transform="rotate(-375.0 74.76 77.55)"/><ellipse cx="74.19" cy="71.48" rx="4.5" ry="1.85" transform="rotate(-437.8 74.19 71.48)"/><ellipse cx="80.27" cy="71.04" rx="4.5" ry="1.85" transform="rotate(-388.5 80.27 71.04)"/><ellipse cx="78.31" cy="65.27" rx="4.5" ry="1.85" transform="rotate(-451.3 78.31 65.27)"/><ellipse cx="84.11" cy="63.42" rx="4.5" ry="1.85" transform="rotate(-402.0 84.11 63.42)"/><ellipse cx="80.86" cy="58.27" rx="4.5" ry="1.85" transform="rotate(-464.8 80.86 58.27)"/><ellipse cx="86.07" cy="55.11" rx="4.5" ry="1.85" transform="rotate(-415.5 86.07 55.11)"/><ellipse cx="81.70" cy="50.86" rx="4.5" ry="1.85" transform="rotate(-478.3 81.70 50.86)"/><ellipse cx="86.03" cy="46.58" rx="4.5" ry="1.85" transform="rotate(-429.0 86.03 46.58)"/><ellipse cx="80.79" cy="43.47" rx="4.5" ry="1.85" transform="rotate(-491.8 80.79 43.47)"/><ellipse cx="84.00" cy="38.29" rx="4.5" ry="1.85" transform="rotate(-442.5 84.00 38.29)"/><ellipse cx="78.18" cy="36.49" rx="4.5" ry="1.85" transform="rotate(-505.3 78.18 36.49)"/><ellipse cx="80.09" cy="30.70" rx="4.5" ry="1.85" transform="rotate(-456.0 80.09 30.70)"/><ellipse cx="74.01" cy="30.31" rx="4.5" ry="1.85" transform="rotate(-518.8 74.01 30.31)"/><path d="M40.63 83.68 A34 34 0 0 1 21.81 31.99" fill="none" stroke="currentColor" stroke-width=".7"/><path d="M59.37 83.68 A34 34 0 0 0 78.19 31.99" fill="none" stroke="currentColor" stroke-width=".7"/></g><path d="M46.4 87.6 L50 85.2 L53.6 87.6 L52.4 91 L50 89.3 L47.6 91 Z" fill="var(--ochre, #80612a)"/><g transform="translate(50 50) scale(.74) translate(-50 -50)"><g fill="currentColor"><rect x="36.5" y="34" width="5" height="32"/><rect x="58.5" y="34" width="5" height="32"/><rect x="41.5" y="48.6" width="17" height="2.8"/><rect x="33.5" y="32.4" width="11" height="2.2"/><rect x="55.5" y="32.4" width="11" height="2.2"/><rect x="33.5" y="65.4" width="11" height="2.2"/><rect x="55.5" y="65.4" width="11" height="2.2"/></g></g></svg>';
   const $ = (sel, el) => (el || document).querySelector(sel);
   const esc = (s) => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const now = () => Date.now();
@@ -304,7 +306,7 @@
   // ---------- Heute ----------
   function renderHome() {
     const t = now(), d = new Date(t);
-    let h = '<div class="view"><header class="mast"><div class="wordmark">HERAKLES</div><div class="sub">' + WDL[d.getDay()] + ' · ' + C.fmtDateLong(t) + '</div></header>';
+    let h = '<div class="view"><header class="mast">' + EMBLEM + '<div class="wordmark">Herakles</div><div class="sub">' + WDL[d.getDay()] + ' · ' + C.fmtDateLong(t) + '</div></header>';
     if (updateReady) h += '<div class="banner info"><b>Update verfügbar</b>Eine neue Version ist geladen.<div class="row"><button class="btn sm primary" data-a="apply-update">Jetzt neu laden</button></div></div>';
     const bw = C.backupWarning(S, t);
     if (bw) h += '<div class="banner" data-testid="backup-warning"><b>Datensicherung</b>' + esc(bw) + '<div class="row"><button class="btn sm primary" data-a="export">Jetzt exportieren</button></div></div>';
@@ -313,6 +315,8 @@
       const dc = C.deloadCheck(S, t);
       if (dc.suggest && !S.active) h += '<div class="banner" data-testid="deload-suggest"><b>Vorschlag: leichtere Woche (Deload)</b>' + esc(dc.reason) + ' Die nächsten ' + S.days.length + ' Einheiten mit weniger Sätzen und ~' + Math.round(S.settings.deload.weightFactor * 100) + ' % Gewicht.<div class="row"><button class="btn sm primary" data-a="deload-yes">Annehmen</button><button class="btn sm ghost" data-a="deload-no">Diesmal nicht</button></div></div>';
     }
+    const due = !S.active && C.optimizeDue(S, t);
+    if (due) h += '<div class="banner" data-testid="optim-due"><b>Planprüfung fällig</b>' + (due.first ? 'Seit Beginn' : 'Seit ' + due.days + ' Tagen') + ' ' + due.sessions + ' Einheiten ohne Prüfung. Die App schlägt Änderungen vor – dein Plan bleibt, bis du etwas übernimmst.<div class="row"><button class="btn sm primary" data-a="opt-open">Vorschlag ansehen</button><button class="btn sm ghost" data-a="opt-snooze">In einer Woche</button></div></div>';
     if (S.active) {
       const a = S.active, done = a.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
       h += '<div class="card hero"><div class="eyebrow">Einheit läuft seit ' + C.fmtTime(a.start) + '</div><div class="big">' + esc(a.dayName) + '</div><div class="muted small">' + done + ' Sätze erledigt</div><div style="margin-top:12px"><button class="btn primary block xl" data-a="go-gym">Weiter trainieren</button></div></div>';
@@ -389,6 +393,10 @@
     const tgt = e.sugg.reps[i] !== undefined ? e.sugg.reps[i] : null;
     let h = '<div class="editor" data-testid="editor"><div class="lbl"><span>' + (s.warmup ? 'Aufwärmsatz' : 'Satz ' + label) + (s.done ? ' · erledigt' : '') + '</span><span>' + (!s.warmup && tgt !== null ? 'Ziel ' + tgt + ' Wdh.' : '') + '</span></div>';
     if (wt) h += '<div class="slbl">' + (ex.equip === 'bwplus' ? 'Zusatzgewicht kg' : 'Gewicht kg') + ' <span>± ' + C.fmtNum(ex.step) + '</span></div><div class="stepper"><button data-a="w-" aria-label="Gewicht minus">−</button><input class="num" inputmode="decimal" data-c="w" data-testid="w-input" value="' + wDisp(s.w) + '" placeholder="eintragen"><button data-a="w+" aria-label="Gewicht plus">+</button></div>';
+    if ((ex.equip === 'bwplus' || ex.equip === 'bw') && S.active.bw) {
+      const bw = S.active.bw, add = ex.equip === 'bwplus' ? (s.w || 0) : 0;
+      h += '<div class="plates" data-testid="total-load">' + (ex.equip === 'bwplus' ? 'Gesamtlast: ' + C.fmtNum(bw) + ' + ' + C.fmtNum(add) + ' = ' + C.fmtKg(C.r2(bw + add)) : 'Körpergewicht: ' + C.fmtKg(bw)) + '</div>';
+    }
     if (ex.equip === 'barbell' && s.w !== null && s.w !== undefined) {
       const pl = C.plateLoad(s.w, S.settings.plates.bar, S.settings.plates.list);
       if (pl) h += '<div class="plates' + (pl.ok ? '' : ' warn') + '" data-testid="plates">Scheiben: ' + esc(pl.text) + ' · Stange ' + C.fmtKg(S.settings.plates.bar) + '</div>';
@@ -439,16 +447,17 @@
         if (!ui.histEx || !withHist.some((e) => e.id === ui.histEx)) ui.histEx = withHist[0].id;
         const ex = S.exercises[ui.histEx], ser = C.exerciseSeries(S, ui.histEx);
         h += '<div class="field"><select data-c="hist-ex" aria-label="Übung">' + withHist.map((e) => '<option value="' + e.id + '"' + (e.id === ui.histEx ? ' selected' : '') + '>' + esc(e.name) + '</option>').join('') + '</select></div>';
-        const metrics = C.usesWeight(ex) ? (ex.equip === 'bwplus' ? [['weight', 'Zusatz'], ['reps', 'Wdh.'], ['volume', 'Volumen']] : [['weight', 'Gewicht'], ['e1rm', '1RM ~'], ['volume', 'Volumen'], ['reps', 'Wdh.']]) : [['reps', 'Wdh.']];
+        let metrics = C.usesWeight(ex) ? (ex.equip === 'bwplus' ? [['weight', 'Zusatz'], ['reps', 'Wdh.'], ['volume', 'Volumen']] : [['weight', 'Gewicht'], ['e1rm', '1RM ~'], ['volume', 'Volumen'], ['reps', 'Wdh.']]) : [['reps', 'Wdh.']];
+        if (ser.some((x) => x.total)) metrics = [['total', 'Gesamt']].concat(metrics);
         if (!metrics.some((m) => m[0] === ui.histMetric)) ui.histMetric = metrics[0][0];
         h += '<div class="seg">' + metrics.map(([k, l]) => '<button data-a="hmetric" data-v="' + k + '" class="' + (ui.histMetric === k ? 'on' : '') + '">' + l + '</button>').join('') + '</div>';
         const pts = ser.map((s) => ({ x: s.date, y: ui.histMetric === 'reps' ? s.totalReps : s[ui.histMetric], dl: s.deload }));
         const unit = ui.histMetric === 'reps' ? '' : ' kg';
-        h += '<div class="card">' + lineChart(pts, (v) => C.fmtNum(Math.round(v * 10) / 10) + unit) + '<div class="tiny muted" style="margin-top:6px">' + ({ weight: 'Arbeitsgewicht je Einheit', e1rm: 'Geschätztes 1RM (Epley-Formel: Gewicht × (1 + Wdh/30)) – nur Richtwert', volume: 'Volumen = Σ Gewicht × Wdh. der Arbeitssätze', reps: 'Summe der Wiederholungen in Arbeitssätzen' })[ui.histMetric] + '. Orange = Deload.</div></div>';
+        h += '<div class="card">' + lineChart(pts, (v) => C.fmtNum(Math.round(v * 10) / 10) + unit) + '<div class="tiny muted" style="margin-top:6px">' + ({ total: 'Gesamtlast = Körpergewicht am Trainingstag + Zusatzgewicht', weight: 'Arbeitsgewicht je Einheit', e1rm: 'Geschätztes 1RM (Epley-Formel: Gewicht × (1 + Wdh/30)) – nur Richtwert', volume: 'Volumen = Σ Gewicht × Wdh. der Arbeitssätze', reps: 'Summe der Wiederholungen in Arbeitssätzen' })[ui.histMetric] + '. Orange = Deload.</div></div>';
         h += '<div class="card"><table class="t"><tr><th>Datum</th><th>Sätze</th>' + (C.usesWeight(ex) ? '<th class="r">kg</th>' : '') + '<th class="r">Vol.</th></tr>' + ser.slice().reverse().slice(0, 10).map((s) => '<tr><td>' + C.fmtDate(s.date) + (s.deload ? ' <span class="badge warn">D</span>' : '') + '</td><td>' + C.repsLabel(s.reps) + '</td>' + (C.usesWeight(ex) ? '<td class="r">' + C.fmtNum(s.weight) + '</td>' : '') + '<td class="r">' + C.fmtNum(Math.round(s.volume)) + '</td></tr>').join('') + '</table></div>';
       }
       const pr = C.personalRecords(S);
-      if (pr.length) h += '<h2>Bestwerte aller Übungen</h2><div class="card" data-testid="records"><table class="t"><tr><th>Übung</th><th class="r">max kg</th><th class="r">1RM ~</th><th class="r">max Wdh.</th></tr>' + pr.map((p) => '<tr><td>' + esc(p.name) + '</td><td class="r">' + (p.equip === 'bw' ? '–' : C.fmtNum(p.maxW)) + '</td><td class="r">' + (p.maxE ? C.fmtNum(Math.round(p.maxE * 10) / 10) : '–') + '</td><td class="r">' + p.maxR + '</td></tr>').join('') + '</table></div>';
+      if (pr.length) h += '<h2>Bestwerte aller Übungen</h2><div class="card" data-testid="records"><table class="t"><tr><th>Übung</th><th class="r">max kg</th><th class="r">1RM ~</th><th class="r">max Wdh.</th></tr>' + pr.map((p) => '<tr><td>' + esc(p.name) + '</td><td class="r">' + (p.maxTotal ? C.fmtNum(p.maxTotal) + '*' : p.equip === 'bw' ? '–' : C.fmtNum(p.maxW)) + '</td><td class="r">' + (p.maxE ? C.fmtNum(Math.round(p.maxE * 10) / 10) : '–') + '</td><td class="r">' + p.maxR + '</td></tr>').join('') + '</table>' + (pr.some((p) => p.maxTotal) ? '<div class="tiny muted" style="margin-top:6px">* Gesamtlast inkl. Körpergewicht am Trainingstag</div>' : '') + '</div>';
     } else if (ui.histTab === 'week') {
       const ws = C.weeklyStats(S, 12, now());
       h += '<div class="card"><div class="muted small" style="margin-bottom:6px">Volumen pro Woche (kg)</div>' + barChart(ws.map((w) => ({ label: 'KW' + w.week, y: w.volume })), (v) => C.fmtNum(Math.round(v))) + '</div>';
@@ -527,6 +536,7 @@
   function renderPlan() {
     let h = '<div class="view"><div class="topbar"><div><h1>Plan</h1><div class="sub">Rotation: ' + S.days.map((d) => esc(d.name.split(' ')[0])).join(' → ') + ' → …</div></div></div>';
     h += '<p class="muted small" style="margin:0 0 6px">„Nächstes Training“ folgt immer der letzten Einheit – nicht dem Wochentag. Übung antippen: Ausführung, Animation, Alternativen.</p>';
+    h += renderOptimizeCard();
     h += renderBalance();
     S.days.forEach((d, di) => {
       const nd = C.nextDay(S);
@@ -576,6 +586,16 @@
   function toggleSetting(label, desc, path, val) {
     return '<div class="setting"><div><div>' + label + '</div>' + (desc ? '<div class="d">' + desc + '</div>' : '') + '</div><label class="toggle"><input type="checkbox" data-c="settog" data-p="' + path + '"' + (val ? ' checked' : '') + ' aria-label="' + esc(label) + '"></label></div>';
   }
+  function renderBodyCard() {
+    const t = now(), bw = C.bodyWeightAt(S, t), age = C.currentAge(S, t), z = C.heartZones(age), list = (S.body || []).slice(-30);
+    let h = '<h2>Körper</h2><div class="list" data-testid="body">';
+    h += '<div class="setting"><div><div>Körpergewicht (kg)</div><div class="d">Für die Gesamtlast bei Klimmzügen und Dips. Ein Eintrag pro Tag, der Verlauf bleibt.</div></div><input type="text" class="setnum" inputmode="decimal" data-c="bodyweight" data-testid="bw-input" value="' + (bw ? C.fmtNum(bw) : '') + '" placeholder="–" aria-label="Körpergewicht in kg"></div>';
+    h += '<div class="setting"><div><div>Alter</div><div class="d">Nur für geschätzte Pulsbereiche beim Laufen.</div></div><input type="text" class="setnum" inputmode="numeric" data-c="age" data-testid="age-input" value="' + (age || '') + '" placeholder="–" aria-label="Alter"></div></div>';
+    if (list.length >= 2) h += '<div class="card" data-testid="bw-chart"><div class="eyebrow">Gewichtsverlauf</div>' + lineChart(list.map((b) => ({ x: b.date, y: b.kg })), (v) => C.fmtNum(Math.round(v * 10) / 10) + ' kg') + '</div>';
+    if (z) h += '<div class="card" data-testid="zones"><div class="eyebrow">Pulsbereiche (Schätzung)</div><div class="kv1"><span>Maximalpuls ~</span><b>' + z.max + '</b></div><div class="kv1"><span>Locker (60–70 %)</span><b>' + z.easy.join('–') + '</b></div><div class="kv1"><span>Zügig (70–80 %)</span><b>' + z.steady.join('–') + '</b></div><div class="kv1"><span>Hart (80–90 %)</span><b>' + z.hard.join('–') + '</b></div><div class="tiny muted" style="margin-top:8px">Formel 208 − 0,7 × Alter (Tanaka, Monahan &amp; Seals 2001). Eine Schätzung: Der echte Maximalpuls kann deutlich abweichen. Keine medizinische Aussage.</div></div>';
+    h += '<p class="tiny muted" style="margin:6px 2px 0">Größe wird nicht abgefragt: Für Sätze, Wiederholungen und Gewichte gibt es keine belastbare Regel, die sich daraus ableitet. Alle Angaben bleiben auf diesem iPhone.</p>';
+    return h;
+  }
   function renderSettings() {
     const st = S.settings, P = st.progression, D = st.deload, Cd = st.cardio;
     const lb = S.meta.lastExportAt;
@@ -589,6 +609,7 @@
       toggleSetting('Ton auch im Lautlos-Modus', 'Experimentell. Kann laufende Musik kurz unterbrechen.', 'soundInSilentMode', st.soundInSilentMode) +
       toggleSetting('Bildschirm während des Trainings an', 'Verhindert Sperren, damit der Timer sichtbar bleibt', 'keepAwake', st.keepAwake) +
       '<div class="setting"><div>Cardio-Art auf „Heute“</div><select data-c="cardioType">' + Object.keys(C.CARDIO).map((k) => '<option value="' + k + '"' + (k === st.cardioType ? ' selected' : '') + '>' + C.CARDIO[k].label + '</option>').join('') + '</select></div></div>';
+    h += renderBodyCard();
     let adv = '<div class="eyebrow">Progression</div><div class="list">' +
       toggleSetting('Reserve berücksichtigen', 'Obergrenze ohne Reserve (0) erreicht → Gewicht bleibt einmal', 'progression.useRIR', P.useRIR !== false) +
       numSetting('Halten ab … Fehlversuchen', 'Hinweis „Gewicht bleibt“', 'progression.stallHold', P.stallHold, { min: 1 }) +
@@ -642,6 +663,8 @@
       '<li><b>Beenden:</b> „Beenden“ → Zusammenfassung mit Dauer, Volumen und neuen Bestwerten.</li>' +
       '<li><b>Ausführung &amp; Alternativen:</b> Im Training auf das kleine „i“ neben dem Übungsnamen tippen (oder im Plan auf den Namen): Animation, Technik-Hinweise, Zielmuskeln, Alternativen. „Heute stattdessen“ tauscht nur für diese Einheit – praktisch, wenn ein Gerät belegt ist.</li>' +
       '<li><b>Plan ändern:</b> Tab „Plan“: Vorschläge übernehmen, Übung bearbeiten („Ändern“), ersetzen, archivieren, sortieren (↑↓), „+ Übung“ aus der Bibliothek.</li>' +
+      '<li><b>Plan optimieren:</b> Tab „Plan“ → „Vorschlag erstellen“ (alle 3 Wochen erinnert die App). Stagnierende Übungen werden getauscht oder neu aufgebaut, Sätze nach Muskel ausgeglichen. Alles, einzelne Tage oder einzelne Änderungen übernehmen – oder nichts. Rückgängig bis zur nächsten Einheit.</li>' +
+      '<li><b>Körper:</b> „Mehr“ → Körpergewicht (Gesamtlast bei Klimmzügen und Dips, Gewichtsverlauf) und Alter (geschätzte Pulsbereiche fürs Laufen).</li>' +
       '<li><b>Korrigieren:</b> „Verlauf“ → Einheit antippen → Werte ändern oder Einheit löschen.</li>' +
       '<li><b>Monatsrückblick:</b> „Verlauf“ → „Monat“: Einheiten, Sätze, Volumen, Stunden, Lauf-Kilometer, neue Bestwerte.</li>' +
       '<li><b>Sichern:</b> Alle 2 Wochen „Exportieren“ und die Datei in „Dateien“ speichern.</li></ul></div></details>';
@@ -680,6 +703,60 @@
     if (L) stopAnim = AN.play($('#figbox'), AN.forEntry(L));
     if (o.focus === 'alts') { const el = $('#alts'); if (el && el.scrollIntoView) el.scrollIntoView(); }
   }
+  // ---------- Plan-Optimierung ----------
+  function renderOptimizeCard() {
+    const O = S.optim || {}, t = now(), due = C.optimizeDue(S, t);
+    let h = '<div class="card optcard" data-testid="optim-card"><div class="row between"><div class="eyebrow">Plan optimieren</div>' + (due ? '<span class="badge warn">fällig</span>' : '') + '</div>';
+    h += '<div class="small" style="margin:6px 0 10px">Prüft Stagnation und Satzverteilung deiner Einheiten und schlägt neue Übungen, Gewichte und Sätze vor. Du übernimmst alles, einzelne Tage oder einzelne Übungen.</div>';
+    h += '<div class="tiny muted" style="margin-bottom:10px">' + (O.lastAt ? 'Letzte Prüfung: ' + C.fmtDateLong(O.lastAt) + (due ? '' : ' · nächste in ' + Math.max(0, 21 - Math.floor((t - O.lastAt) / C.DAY)) + ' Tagen') : 'Empfohlen alle 3 Wochen, ab 6 Einheiten.') + '</div>';
+    h += '<button class="btn block' + (due ? ' primary' : '') + '" data-a="opt-open" data-testid="optim-open">Vorschlag erstellen</button>';
+    if (C.canUndoOptimization(S)) h += '<div style="text-align:center;margin-top:6px"><button class="link" data-a="opt-undo" data-testid="optim-undo">Letzte Optimierung rückgängig</button></div>';
+    return h + '</div>';
+  }
+  function optTitle(c) {
+    if (c.kind === 'replace') return esc(c.oldName) + ' → ' + esc(c.newName);
+    if (c.kind === 'reset') return esc(c.name) + ': ' + C.fmtNum(c.from) + ' → ' + C.fmtKg(c.to);
+    if (c.kind === 'sets') return esc(c.name) + ': ' + c.from + ' → ' + c.to + ' Sätze';
+    return '+ ' + esc(c.newName) + ' (3 Sätze)';
+  }
+  function optWeightLine(c) {
+    if (c.kind !== 'replace' && c.kind !== 'add') return '';
+    if (c.weightNote === 'ohne Gewicht') return '';
+    return '<div class="s optw">Startgewicht: ' + (c.startWeight !== null && c.startWeight !== undefined ? '<b>' + C.fmtKg(c.startWeight) + '</b> · ' + esc(c.weightNote) : esc(c.weightNote)) + '</div>';
+  }
+  function optCount() {
+    const n = document.querySelectorAll('.optck:checked').length, b = $('[data-a="opt-apply"]');
+    if (b) { b.textContent = n ? 'Übernehmen (' + n + ')' : 'Nichts ausgewählt'; b.disabled = !n; }
+    document.querySelectorAll('[data-c="opt-day"]').forEach((d) => {
+      const all = Array.from(document.querySelectorAll('.optck[data-day="' + d.dataset.d + '"]'));
+      d.checked = all.length > 0 && all.every((x) => x.checked); d.indeterminate = !d.checked && all.some((x) => x.checked);
+    });
+  }
+  function openOptimize() {
+    const t = now();
+    const p = C.optimizePlan(S, t);
+    ui.optProposal = p;
+    let h = '<h3>Planvorschlag</h3><p class="small muted" style="margin-top:-4px">Grundlage: ' + p.sessions + ' Einheiten, ' + p.analysed + ' Übungen mit genug Verlauf. Dein aktiver Plan bleibt unverändert, bis du übernimmst.</p>';
+    if (!p.changes.length) {
+      h += '<div class="card"><b>Kein Änderungsbedarf.</b><div class="small" style="margin-top:6px">Keine Übung stagniert, und alle Muskeln liegen im Richtwert von ~' + C.VOLUME_TARGET + ' Sätzen pro Woche.</div></div><div class="actions"><button class="btn primary" data-a="opt-none">Fertig</button></div>';
+      sheet(h); return;
+    }
+    const quiet = [];
+    p.days.forEach((d, i) => {
+      if (!d.changes.length) { quiet.push((i + 1) + '. ' + d.name); return; }
+      h += '<div class="optday" data-testid="optim-day"><label class="optdayhead"><input type="checkbox" data-c="opt-day" data-d="' + d.dayId + '" checked aria-label="Ganzen Tag übernehmen"><span class="grow"><span class="serif">' + (i + 1) + '. ' + esc(d.name) + '</span><span class="tiny muted"> · ' + d.changes.length + ' Änderung' + (d.changes.length > 1 ? 'en' : '') + '</span></span></label>';
+      d.changes.forEach((c) => {
+        h += '<label class="optrow" data-testid="optim-change"><input type="checkbox" class="optck" data-c="opt-ck" data-day="' + d.dayId + '" value="' + c.id + '" checked><div class="grow"><div class="t">' + optTitle(c) + '</div><div class="s">' + esc(c.reason) + '</div>' + optWeightLine(c) + '</div></label>';
+      });
+      const keep = d.keep.filter((k) => k.weight !== null && k.weight !== undefined);
+      if (keep.length) h += '<details class="optkeep"><summary>Unverändert · nächste Gewichte (' + keep.length + ')</summary>' + keep.map((k) => '<div class="kv1"><span>' + esc(k.name) + '</span><b>' + C.fmtKg(k.weight) + '</b></div>').join('') + '</details>';
+      h += '</div>';
+    });
+    if (quiet.length) h += '<p class="tiny muted">Ohne Änderungen: ' + esc(quiet.join(', ')) + '.</p>';
+    h += '<div class="actions"><button class="btn ghost" data-a="close">Später</button><button class="btn primary" data-a="opt-apply" data-testid="optim-apply">Übernehmen (' + p.changes.length + ')</button></div>';
+    sheet(h);
+  }
+
   function renderBalance() {
     const v = C.planVolume(S), sug = C.planSuggestions(S);
     const max = Math.max(24, Math.max.apply(null, v.groups.map((g) => g.sets)));
@@ -728,6 +805,21 @@
     'start-day'(el) { closeSheet(); A.start(el); },
     'sheet-bg'(el, ev) { if (ev.target === el) dismissSheet(); },
     'sheet-dismiss'() { dismissSheet(); },
+    'opt-open'() { if (S.active) { toast('Erst die laufende Einheit beenden'); return; } if (view !== 'plan') { view = 'plan'; render(); } openOptimize(); },
+    'opt-snooze'() { C.snoozeOptimization(S, now(), 7); save(); render(); toast('Erinnerung in einer Woche'); },
+    'opt-none'() { C.optimizationChecked(S, now()); save(); closeSheet(); render(); },
+    'opt-apply'() {
+      const p = ui.optProposal; if (!p) return;
+      const ids = Array.from(document.querySelectorAll('.optck:checked')).map((x) => x.value);
+      if (!ids.length) return;
+      const done = C.applyOptimization(S, p, ids, now());
+      ui.optProposal = null; save(); closeSheet(); render();
+      toast(done.length + (done.length === 1 ? ' Änderung' : ' Änderungen') + ' übernommen');
+    },
+    async 'opt-undo'() {
+      if (!(await confirmBox('Optimierung rückgängig?', 'Der Plan wird auf den Stand vor der letzten Übernahme zurückgesetzt.', 'Rückgängig'))) return;
+      if (C.undoOptimization(S)) { save(); render(); toast('Plan zurückgesetzt'); }
+    },
     'cf-yes'() { const p = pendingConfirm; pendingConfirm = null; closeSheet(); if (p) p(true); },
     'cf-no'() { const p = pendingConfirm; pendingConfirm = null; closeSheet(); if (p) p(false); },
     'deload-yes'() { C.acceptDeload(S, now()); save(); toast('Deload-Woche aktiv'); render(); },
@@ -936,9 +1028,13 @@
     sheet('<h3>Cardio eintragen</h3><div class="seg">' + Object.keys(C.CARDIO).map((k) => '<button data-a="cardio-type" data-v="' + k + '" class="' + (k === type ? 'on' : '') + '">' + C.CARDIO[k].label + '</button>').join('') + '</div>' +
       '<div class="banner info" style="margin-bottom:12px">' + (sug.target !== null ? '<b>Ziel: ' + C.fmtMetric(sug.target, type) + '</b>' : '') + esc(sug.reason) + '</div>' +
       '<div class="grid2"><div class="field"><label>' + (type === 'swim' ? 'Distanz (m)' : 'Distanz (km)') + (T.metric === 'distance' ? '' : ' – optional') + '</label><input id="c-dist" inputmode="decimal" data-c="cardio-calc" placeholder="' + (type === 'swim' ? 'z. B. 1000' : 'z. B. 6,2') + '"></div><div class="field"><label>Zeit (mm:ss oder h:mm:ss)' + (T.metric === 'duration' ? '' : ' – optional') + '</label><input id="c-dur" inputmode="numeric" data-c="cardio-calc" placeholder="z. B. 34:30"></div></div>' +
-      '<div class="small muted" id="c-pace" style="margin:-4px 2px 10px"></div>' +
+      '<div class="small muted" id="c-pace" style="margin:-4px 2px 10px"></div>' + cardioZones(type) +
       '<div class="grid2"><div class="field"><label>Datum</label><input id="c-date" type="date" value="' + dv + '"></div><div class="field"><label>Notiz</label><input id="c-note" maxlength="120" placeholder="optional"></div></div>' +
       '<div class="actions"><button class="btn ghost" data-a="close">Abbrechen</button><button class="btn primary" data-a="cardio-save" data-t="' + type + '">Speichern</button></div>');
+  }
+  function cardioZones(type) {
+    const z = (type === 'run' || type === 'bike') ? C.heartZones(C.currentAge(S, now())) : null;
+    return z ? '<div class="tiny muted" data-testid="cardio-zones" style="margin:-4px 2px 12px">Puls (Schätzung): locker ' + z.easy.join('–') + ' · zügig ' + z.steady.join('–') + ' · hart ' + z.hard.join('–') + '</div>' : '';
   }
   function updateCardioPace() {
     const btn = $('[data-a=cardio-save]'); if (!btn) return;
@@ -1024,7 +1120,17 @@
       if (c === 'w') { const old = s.w; s.w = v === null ? null : Math.max(0, v); carryWeight(e, i, old); }
       else s.r = v === null ? 0 : Math.max(0, Math.round(v));
       save(); render();
-    } else if (c === 'ex-note') { curEx().note = el.value; save(); }
+    } else if (c === 'bodyweight') {
+      const v = C.parseNum(el.value);
+      if (v === null) return;
+      if (C.logBodyWeight(S, v, now())) { if (S.active && !S.active.bw) S.active.bw = C.r2(v); save(); render(); toast('Körpergewicht gespeichert'); } else { toast('Bitte ein Gewicht zwischen 20 und 400 kg'); render(); }
+    } else if (c === 'age') {
+      const v = C.parseNum(el.value);
+      S.settings.profile = v && v >= 10 && v <= 100 ? { age: Math.round(v), ageAt: now() } : { age: null, ageAt: null };
+      save(); render();
+    } else if (c === 'opt-day') { document.querySelectorAll('.optck[data-day="' + el.dataset.d + '"]').forEach((x) => { x.checked = el.checked; }); optCount(); }
+    else if (c === 'opt-ck') optCount();
+    else if (c === 'ex-note') { curEx().note = el.value; save(); }
     else if (c === 'hist-ex') { ui.histEx = el.value; render(); }
     else if (c === 'theme') { S.settings.theme = el.value; save(); render(); }
     else if (c === 'cardioType') { S.settings.cardioType = el.value; save(); }

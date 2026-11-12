@@ -109,6 +109,7 @@
       cardioType: 'run',
       progression: { stallHold: 2, stallReduce: 3, reducePct: 10, longBreakDays: 14, useRIR: true },
       plates: { bar: 20, list: [25, 20, 15, 10, 5, 2.5, 1.25] },
+      profile: { age: null, ageAt: null },
       deload: { everyWeeks: 6, stagnationCount: 3, setsFactor: 0.5, weightFactor: 0.9 },
       cardio: { ratePct: 5, deloadEvery: 4, deloadFactor: 0.8, maxSpikePct: 10, holdBelowPct: 95,
         caps: { run: 12, bike: 90, swim: 2, other: 90 } }
@@ -150,6 +151,8 @@
       cardio: [],
       active: null,
       deload: { active: false, sessionsLeft: 0, lastDeloadAt: null, snoozeUntil: null },
+      body: [],
+      optim: { lastAt: null, snoozeUntil: null, undo: null, log: [] },
       planV: 2,
       meta: { lastExportAt: null, updatedAt: now || Date.now() }
     };
@@ -167,6 +170,9 @@
     out.settings.cardio = Object.assign({}, d.settings.cardio, (s.settings || {}).cardio || {});
     out.settings.cardio.caps = Object.assign({}, d.settings.cardio.caps, ((s.settings || {}).cardio || {}).caps || {});
     out.settings.plates = Object.assign({}, d.settings.plates, (s.settings || {}).plates || {});
+    out.settings.profile = Object.assign({}, d.settings.profile, (s.settings || {}).profile || {});
+    out.body = Array.isArray(s.body) ? s.body : [];
+    out.optim = Object.assign({}, d.optim, s.optim || {});
     out.deload = Object.assign({}, d.deload, s.deload || {});
     out.meta = Object.assign({}, d.meta, s.meta || {});
     out.rotation = Object.assign({}, d.rotation, s.rotation || {});
@@ -202,7 +208,7 @@
         if (e.exId !== exId) continue;
         const ws = workSets(e);
         if (!ws.length) continue;
-        out.push({ date: s.start, sessionId: s.id, deload: !!s.deload, sets: ws.map((x) => ({ w: x.w || 0, r: x.r, rir: x.rir })) });
+        out.push({ date: s.start, sessionId: s.id, deload: !!s.deload, bw: s.bw === undefined || s.bw === null ? bodyWeightAt(state, s.start) : s.bw, sets: ws.map((x) => ({ w: x.w || 0, r: x.r, rir: x.rir })) });
       }
     }
     out.sort((a, b) => a.date - b.date);
@@ -291,6 +297,11 @@
       return res;
     }
 
+    if (ex.nextWeight !== undefined && ex.nextWeight !== null) {
+      res.kind = 'plan'; res.weight = ex.nextWeight; res.reps = Array(ex.sets).fill(ex.repMin);
+      res.reason = ex.nextReason || ('Neuer Block: ' + fmtKg(ex.nextWeight) + ' und von hier aus steigern.');
+      return res;
+    }
     if (L.allTop) {
       if (daysSince >= P.longBreakDays) {
         res.kind = 'break'; res.weight = L.W; res.reps = targetsFrom(L.reps.map((r) => r - 1), ex);
@@ -408,7 +419,7 @@
       for (let i = 0; i < s.sets; i++) sets.push({ w: s.weight, r: s.reps[i] !== undefined ? s.reps[i] : e.repMin, rir: null, warmup: false, done: false });
       return { exId: id, name: e.name, note: '', sugg: { weight: s.weight, reps: s.reps, kind: s.kind, reason: s.reason, last: s.last ? { W: s.last.W, reps: s.last.reps, date: s.last.date } : null }, sets };
     });
-    state.active = { id: uid('s'), dayId: day.id, dayName: day.name, start: now, deload, cur: 0, exercises: exs, timer: null, updatedAt: now };
+    state.active = { id: uid('s'), dayId: day.id, dayName: day.name, start: now, deload, cur: 0, exercises: exs, timer: null, updatedAt: now, bw: bodyWeightAt(state, now) };
     return state.active;
   }
 
@@ -467,12 +478,14 @@
     const a = state.active;
     if (!a) return null;
     const session = {
-      id: a.id, dayId: a.dayId, dayName: a.dayName, start: a.start, end: now, deload: a.deload,
+      id: a.id, dayId: a.dayId, dayName: a.dayName, start: a.start, end: now, deload: a.deload, bw: a.bw === undefined ? bodyWeightAt(state, a.start) : a.bw,
       exercises: a.exercises.map((e) => ({ exId: e.exId, name: e.name, note: e.note || '', sets: e.sets.filter((s) => s.done).map((s) => ({ w: s.w === null || s.w === undefined ? 0 : s.w, r: s.r || 0, rir: s.rir, warmup: !!s.warmup })) }))
         .filter((e) => e.sets.length || e.note)
     };
     const prs = sessionPRs(state, session);
     state.sessions.push(session);
+    // einmaliges Startgewicht nach einer Planoptimierung ist verbraucht, sobald die Übung trainiert wurde
+    if (!a.deload) session.exercises.forEach((e) => { const ex = state.exercises[e.exId]; if (ex && ex.nextWeight !== undefined && workSets(e).length) { delete ex.nextWeight; delete ex.nextReason; } });
     const idx = state.days.findIndex((d) => d.id === a.dayId);
     if (idx >= 0) state.rotation.nextDayIndex = (idx + 1) % state.days.length;
     if (a.deload && state.deload.active) {
@@ -599,7 +612,8 @@
     const ex = state.exercises[exId];
     return exerciseHistory(state, exId, { includeDeload: true }).map((h) => {
       const s = summarize(h, ex);
-      return { date: h.date, weight: s.W, reps: s.reps, e1rm: ex.equip === 'bw' || ex.equip === 'bwplus' ? null : r2(Math.max.apply(null, h.sets.map((x) => e1rm(x.w, x.r)))), volume: r2(h.sets.reduce((a, x) => a + (x.w || 0) * x.r, 0)), totalReps: h.sets.reduce((a, x) => a + x.r, 0), deload: h.deload };
+      const total = (ex.equip === 'bw' || ex.equip === 'bwplus') && h.bw ? r2(h.bw + s.W) : null;
+      return { date: h.date, weight: s.W, total, reps: s.reps, e1rm: ex.equip === 'bw' || ex.equip === 'bwplus' ? null : r2(Math.max.apply(null, h.sets.map((x) => e1rm(x.w, x.r)))), volume: r2(h.sets.reduce((a, x) => a + (x.w || 0) * x.r, 0)), totalReps: h.sets.reduce((a, x) => a + x.r, 0), deload: h.deload };
     });
   }
 
@@ -612,7 +626,8 @@
       const maxW = Math.max.apply(null, ser.map((s) => s.weight));
       const maxE = Math.max.apply(null, ser.map((s) => s.e1rm || 0));
       const maxR = Math.max.apply(null, ser.map((s) => Math.max.apply(null, s.reps)));
-      out.push({ id, name: ex.name, equip: ex.equip, maxW, maxE: r2(maxE), maxR, sessions: ser.length });
+      const tot = ser.filter((s) => s.total).map((s) => s.total);
+      out.push({ id, name: ex.name, equip: ex.equip, maxW, maxE: r2(maxE), maxR, maxTotal: tot.length ? Math.max.apply(null, tot) : null, sessions: ser.length });
     }
     return out.sort((a, b) => a.name.localeCompare(b.name, 'de'));
   }
@@ -791,7 +806,215 @@
     return ne;
   }
 
+  // ---------- Plan-Optimierung (alle 3 Wochen, immer nur ein Vorschlag) ----------
+  const OPT_DAYS = 21, OPT_MIN_SESSIONS = 6, VOLUME_HIGH = 22;
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  function optimState(state) { return Object.assign({ lastAt: null, snoozeUntil: null, undo: null, log: [] }, state.optim || {}); }
+  function optimizeDue(state, now) {
+    now = now || Date.now();
+    const O = optimState(state);
+    if (!state.sessions.length || (O.snoozeUntil && now < O.snoozeUntil)) return null;
+    const since = O.lastAt || state.sessions.reduce((m, x) => Math.min(m, x.start), Infinity);
+    const n = state.sessions.filter((x) => x.start >= since && !x.deload).length;
+    const days = Math.floor((now - since) / DAY);
+    if (days >= OPT_DAYS && n >= OPT_MIN_SESSIONS) return { days, sessions: n, first: !O.lastAt };
+    return null;
+  }
+  // Startgewicht nur aus eigenen Daten: dieselbe Übung schon einmal trainiert (z. B. „heute stattdessen“ oder archiviert)
+  function ownStartWeight(state, key, now) {
+    const ex = Object.values(state.exercises).find((e) => e.lib === key);
+    if (!ex || !usesWeight(ex) || !exerciseHistory(state, ex.id).length) return null;
+    const sg = suggest(state, ex.id, now, { deload: false });
+    return sg.weight === null || sg.weight === undefined ? null : { w: sg.weight, last: sg.last };
+  }
+  function optimizePlan(state, now) {
+    now = now || Date.now();
+    const P = state.settings.progression;
+    const changes = [], touched = {}, usedKeys = planLibKeys(state);
+    const fam = (k) => (Library && Library.BY[k] ? Library.BY[k].family : null);
+    const usedFam = () => usedKeys.map(fam).filter(Boolean);
+    const add = (c) => { c.id = 'c' + (changes.length + 1); changes.push(c); return c; };
+    const dayOf = (exId) => state.days.find((d) => d.exerciseIds.indexOf(exId) >= 0);
+    let analysed = 0;
+    // 1) Stagnation: pro Trainingstag höchstens ein Tausch (die hartnäckigste Übung), sonst Gewicht zurücknehmen
+    const pickAlt = (L0) => {
+      if (!L0) return null;
+      let best = null, bestScore = -1;
+      Library.LIST.forEach((e) => {
+        if (e.key === L0.key || usedKeys.indexOf(e.key) >= 0 || usedFam().indexOf(e.family) >= 0) return;
+        if (e.primary.indexOf(L0.primary[0]) < 0) return; // Hauptmuskel muss gleich bleiben
+        const overlap = e.primary.filter((g) => L0.primary.indexOf(g) >= 0).length;
+        const score = (e.anim === L0.anim ? 100 : 0) + (overlap === L0.primary.length ? 40 : 0) + overlap * 10 + (e.equip !== L0.equip ? 1 : 0);
+        if (score > bestScore) { bestScore = score; best = e; }
+      });
+      return best;
+    };
+    state.days.forEach((d) => {
+      const stalled = [];
+      d.exerciseIds.forEach((exId) => {
+        const ex = state.exercises[exId];
+        if (!ex || ex.archived || touched[exId]) return;
+        const hist = exerciseHistory(state, exId);
+        if (hist.length < 3) return;
+        analysed++;
+        const a = analyze(hist, ex), steps = a.steps, L = a.last;
+        const block = steps.filter((x) => x.date >= now - OPT_DAYS * DAY);
+        const flat = block.length >= 3 && block[block.length - 1].W <= block[0].W && block[block.length - 1].total <= block[0].total && !block.some((x) => x.allTop);
+        if (!(a.stall >= P.stallReduce || flat)) return;
+        const wt = usesWeight(ex);
+        const lastTxt = repsLabel(L.reps) + (wt ? ' mit ' + fmtKg(L.W) + (ex.equip === 'bwplus' ? ' Zusatz' : '') : '');
+        const why = a.stall >= P.stallReduce ? a.stall + '× in Folge ohne Steigerung (zuletzt ' + lastTxt + ')' : 'in den letzten 3 Wochen kein Fortschritt (' + block.length + ' Einheiten, zuletzt ' + lastTxt + ')';
+        stalled.push({ ex, exId, L, wt, why, weight: Math.max(a.stall, flat ? P.stallReduce : 0) });
+      });
+      stalled.sort((x, y) => y.weight - x.weight);
+      let swapped = false;
+      stalled.forEach((st) => {
+        const { ex, exId, L, wt, why } = st;
+        touched[exId] = true;
+        const alt = swapped ? null : pickAlt(libOf(ex));
+        if (alt) {
+          swapped = true;
+          const sw = ownStartWeight(state, alt.key, now);
+          usedKeys.push(alt.key);
+          const same = alt.primary.filter((g) => libOf(ex).primary.indexOf(g) >= 0);
+          add({ kind: 'replace', dayId: d.id, exId, oldName: ex.name, key: alt.key, newName: alt.name, equip: alt.equip, startWeight: sw ? sw.w : null,
+            weightNote: !usesWeight({ equip: alt.equip }) ? 'ohne Gewicht' : sw ? 'aus deinem eigenen Verlauf mit dieser Übung' : 'noch kein eigener Wert – beim ersten Mal selbst eintragen',
+            reason: ex.name + ': ' + why + '. Neuer Reiz für dieselben Muskeln (' + same.join(', ') + '): ' + alt.why + (alt.equip !== ex.equip ? ' Mit ' + EQUIP[alt.equip] + ' statt ' + EQUIP[ex.equip] + '.' : '') });
+        } else if (wt && L.W > 0) {
+          const w = reduceWeight(L.W, ex.step, P.reducePct);
+          add({ kind: 'reset', dayId: d.id, exId, name: ex.name, from: L.W, to: w,
+            reason: ex.name + ': ' + why + '. ' + (swapped ? 'Pro Tag wird nur eine Übung getauscht, damit Fortschritte vergleichbar bleiben. Hier daher:' : 'Keine passende Alternative frei, daher:') + ' Gewicht auf ' + fmtKg(w) + ' (−' + Math.round((1 - w / L.W) * 100) + ' %) und von dort wieder steigern.' });
+        }
+      });
+    });
+    // 2) Satzverteilung pro Muskel (nach den Tauschvorschlägen)
+    const sim = clone({ exercises: state.exercises, days: state.days, settings: state.settings });
+    changes.filter((c) => c.kind === 'replace').forEach((c) => {
+      const L = Library.BY[c.key], tmpId = 'tmp-' + c.id, old = sim.exercises[c.exId];
+      sim.exercises[tmpId] = Object.assign({}, old, { id: tmpId, name: L.name, equip: L.equip, lib: c.key });
+      sim.days.forEach((d) => { d.exerciseIds = d.exerciseIds.map((x) => (x === c.exId ? tmpId : x)); });
+    });
+    const vol = planVolume(sim);
+    vol.groups.filter((g) => g.status === 'low').forEach((g) => {
+      const head = g.group + ': ' + fmtNum(g.sets) + ' Sätze pro Woche, Richtwert ~' + VOLUME_TARGET + ' (Schoenfeld, Ogborn & Krieger 2017). ';
+      // erst eine vorhandene Übung um einen Satz ergänzen, sonst eine neue Übung
+      let pick = null;
+      state.days.forEach((d) => d.exerciseIds.forEach((id) => {
+        const ex = state.exercises[id], L = libOf(ex);
+        if (!ex || ex.archived || touched[id] || !L || L.primary.indexOf(g.group) < 0 || ex.sets >= 5) return;
+        if (!pick || ex.sets < pick.sets) pick = ex;
+      }));
+      const need = Math.ceil((VOLUME_TARGET - g.sets) / (vol.perWeek || 1));
+      if (pick && need <= 1) {
+        touched[pick.id] = true;
+        add({ kind: 'sets', dayId: dayOf(pick.id).id, exId: pick.id, name: pick.name, from: pick.sets, to: pick.sets + 1, reason: head + 'Ein Satz mehr bei ' + pick.name + ' reicht dafür.' });
+        return;
+      }
+      const plusSets = (ex) => Math.min(5, ex.sets + Math.min(2, need)) - ex.sets;
+      const cand = Library.LIST.find((e) => e.primary.indexOf(g.group) >= 0 && usedKeys.indexOf(e.key) < 0 && usedFam().indexOf(e.family) < 0);
+      if (cand) {
+        const day = bestDayFor(state, g.group), sw = ownStartWeight(state, cand.key, now);
+        usedKeys.push(cand.key);
+        add({ kind: 'add', dayId: day ? day.id : state.days[0].id, key: cand.key, newName: cand.name, equip: cand.equip, startWeight: sw ? sw.w : null,
+          weightNote: !usesWeight({ equip: cand.equip }) ? 'ohne Gewicht' : sw ? 'aus deinem eigenen Verlauf mit dieser Übung' : 'noch kein eigener Wert – beim ersten Mal selbst eintragen',
+          reason: head + cand.name + ': ' + cand.why });
+      } else if (pick) {
+        touched[pick.id] = true;
+        const n = plusSets(pick);
+        add({ kind: 'sets', dayId: dayOf(pick.id).id, exId: pick.id, name: pick.name, from: pick.sets, to: pick.sets + n, reason: head + 'Alle passenden Übungen sind im Plan – ' + (n > 1 ? n + ' Sätze' : 'ein Satz') + ' mehr bei ' + pick.name + (pick.sets + n >= 5 ? ' (Obergrenze 5 Sätze pro Übung).' : '.') });
+      }
+    });
+    vol.groups.filter((g) => g.sets > VOLUME_HIGH).forEach((g) => {
+      let pick = null;
+      state.days.forEach((d) => d.exerciseIds.forEach((id) => {
+        const ex = state.exercises[id], L = libOf(ex);
+        if (!ex || ex.archived || touched[id] || !L || L.primary.indexOf(g.group) < 0 || ex.sets <= 2) return;
+        if (!pick || ex.sets > pick.sets) pick = ex;
+      }));
+      if (!pick) return;
+      touched[pick.id] = true;
+      const after = r2(g.sets - vol.perWeek);
+      add({ kind: 'sets', dayId: dayOf(pick.id).id, exId: pick.id, name: pick.name, from: pick.sets, to: pick.sets - 1,
+        reason: g.group + ': ' + fmtNum(g.sets) + ' Sätze pro Woche. Mehr schadet nicht, der Zusatznutzen ist aber unsicher – ein Satz weniger bei ' + pick.name + ' spart Zeit, der Muskel bleibt mit ~' + fmtNum(after) + ' Sätzen klar über dem Richtwert.' });
+    });
+    // 3) Unveränderte Übungen: nächstes Gewicht laut Progression (zur Übersicht)
+    const days = state.days.map((d) => ({
+      dayId: d.id, name: d.name,
+      changes: changes.filter((c) => c.dayId === d.id),
+      keep: d.exerciseIds.filter((id) => state.exercises[id] && !state.exercises[id].archived && !touched[id]).map((id) => {
+        const ex = state.exercises[id], sg = suggest(state, id, now, { deload: false });
+        return { exId: id, name: ex.name, weight: usesWeight(ex) ? sg.weight : null, kind: sg.kind, equip: ex.equip };
+      })
+    }));
+    return { createdAt: now, analysed, sessions: state.sessions.length, changes, days };
+  }
+  function applyOptimization(state, proposal, ids, now) {
+    now = now || Date.now();
+    const pick = proposal.changes.filter((c) => ids.indexOf(c.id) >= 0);
+    const O = optimState(state);
+    O.undo = { at: now, exercises: clone(state.exercises), days: clone(state.days), sessions: state.sessions.length };
+    const done = [];
+    const order = { replace: 0, reset: 1, sets: 2, add: 3 };
+    pick.sort((a, b) => order[a.kind] - order[b.kind]).forEach((c) => {
+      const ex = c.exId ? state.exercises[c.exId] : null;
+      if (c.kind === 'replace') {
+        if (!ex || ex.archived || !state.days.some((d) => d.exerciseIds.indexOf(c.exId) >= 0)) return;
+        replaceInPlan(state, c.exId, c.key);
+      } else if (c.kind === 'reset') {
+        if (!ex || ex.archived) return;
+        ex.nextWeight = c.to; ex.nextReason = 'Neuer Block nach der Planoptimierung: ' + fmtKg(c.to) + ' (vorher ' + fmtKg(c.from) + ') – von hier aus wieder steigern.';
+      } else if (c.kind === 'sets') {
+        if (!ex || ex.archived) return;
+        ex.sets = Math.max(1, Math.min(10, c.to));
+      } else if (c.kind === 'add') {
+        addFromLib(state, c.key, c.dayId);
+      }
+      done.push(c.id);
+    });
+    O.lastAt = now; O.snoozeUntil = null;
+    O.log = (O.log || []).concat([{ at: now, proposed: proposal.changes.length, accepted: done.length }]).slice(-12);
+    if (!done.length) O.undo = null;
+    state.optim = O;
+    return done;
+  }
+  function optimizationChecked(state, now) { const O = optimState(state); O.lastAt = now || Date.now(); O.snoozeUntil = null; state.optim = O; }
+  function snoozeOptimization(state, now, days) { const O = optimState(state); O.snoozeUntil = (now || Date.now()) + (days || 7) * DAY; state.optim = O; }
+  function canUndoOptimization(state) { const O = optimState(state); return !!(O.undo && O.undo.sessions === state.sessions.length && !state.active); }
+  function undoOptimization(state) {
+    if (!canUndoOptimization(state)) return false;
+    const O = optimState(state);
+    state.exercises = O.undo.exercises; state.days = O.undo.days; O.undo = null; state.optim = O;
+    return true;
+  }
+
+  // ---------- Körperdaten ----------
+  function bodyWeightAt(state, ts) {
+    const list = (state.body || []).filter((b) => b.date <= (ts || Date.now()) + DAY / 2).sort((a, b) => a.date - b.date);
+    return list.length ? list[list.length - 1].kg : null;
+  }
+  function logBodyWeight(state, kg, now) {
+    now = now || Date.now();
+    if (!(kg > 20 && kg < 400)) return false;
+    state.body = (state.body || []).filter((b) => new Date(b.date).toDateString() !== new Date(now).toDateString());
+    state.body.push({ date: now, kg: r2(kg) });
+    state.body.sort((a, b) => a.date - b.date);
+    return true;
+  }
+  function currentAge(state, now) {
+    const pr = (state.settings && state.settings.profile) || {};
+    if (!pr.age) return null;
+    return pr.age + Math.floor(((now || Date.now()) - (pr.ageAt || now || Date.now())) / (365.25 * DAY));
+  }
+  // Maximalpuls geschätzt nach Tanaka, Monahan & Seals (2001): 208 − 0,7 × Alter. Nur eine Schätzung.
+  function heartZones(age) {
+    if (!age || age < 10 || age > 100) return null;
+    const max = Math.round(208 - 0.7 * age);
+    const z = (a, b) => [Math.round(max * a), Math.round(max * b)];
+    return { max, easy: z(0.6, 0.7), steady: z(0.7, 0.8), hard: z(0.8, 0.9) };
+  }
+
   return {
+    optimizeDue, optimizePlan, applyOptimization, optimizationChecked, snoozeOptimization, canUndoOptimization, undoOptimization, bodyWeightAt, logBodyWeight, currentAge, heartZones,
     DAY, SCHEMA, VOLUME_TARGET, plateLoad, monthReview, planVolume, planSuggestions, alternatives, addFromLib, addSetToExercise, replaceInPlan, swapInSession, exerciseFromLib, libOf, EQUIP, CARDIO, uid, r2, fmtNum, fmtKg, fmtDate, fmtDateLong, fmtTime, fmtDuration, parseDuration, parseNum, repsLabel,
     weekStart, isoWeek, e1rm, usesWeight, defaultSettings, defaultPlan, defaultState, migrate, validateImport,
     exerciseHistory, summarize, analyze, suggest, reduceWeight, deloadCheck, acceptDeload, declineDeload, endDeload, activeExerciseIds,

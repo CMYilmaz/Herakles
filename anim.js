@@ -158,9 +158,9 @@
     const pt = at ? [at[0] + (pr.dx || 0), at[1] - (pr.dy || 0)] : null;
     switch (pr.k) {
       case 'line': return seg([pr.p[0], pr.p[1]], [pr.p[2], pr.p[3]], 'eq', pr.w);
-      case 'plate': return '<circle class="wt" cx="' + X(pt).toFixed(1) + '" cy="' + Y(pt).toFixed(1) + '" r="12"/><circle class="hub" cx="' + X(pt).toFixed(1) + '" cy="' + Y(pt).toFixed(1) + '" r="3"/>';
-      case 'db': return '<rect class="wt" x="' + (X(pt) - 9).toFixed(1) + '" y="' + (Y(pt) - 5).toFixed(1) + '" width="18" height="10" rx="2"/>';
-      case 'kb': return '<circle class="wt" cx="' + X(pt).toFixed(1) + '" cy="' + (Y(pt) + 8).toFixed(1) + '" r="8"/>';
+      case 'plate': return '<circle class="wt" ' + (paint('wt') || '') + ' cx="' + X(pt).toFixed(1) + '" cy="' + Y(pt).toFixed(1) + '" r="12"/><circle class="hub" cx="' + X(pt).toFixed(1) + '" cy="' + Y(pt).toFixed(1) + '" r="3"/>';
+      case 'db': return '<rect class="wt" ' + (paint('wt') || '') + ' x="' + (X(pt) - 9).toFixed(1) + '" y="' + (Y(pt) - 5).toFixed(1) + '" width="18" height="10" rx="2"/>';
+      case 'kb': return '<circle class="wt" ' + (paint('wt') || '') + ' cx="' + X(pt).toFixed(1) + '" cy="' + (Y(pt) + 8).toFixed(1) + '" r="8"/>';
       case 'handle': return '<circle class="hub2" cx="' + X(pt).toFixed(1) + '" cy="' + Y(pt).toFixed(1) + '" r="4"/>';
       case 'bar': return seg([pt[0] - 16, pt[1] + 1], [pt[0] + 16, pt[1] + 1], 'eqd', 4);
       case 'roller': return '<circle class="eq-f" cx="' + X(pt).toFixed(1) + '" cy="' + Y(pt).toFixed(1) + '" r="6"/>';
@@ -185,12 +185,41 @@
     d += ' L' + SP(pts[pts.length - 1]);
     return d;
   }
+  // ---------- Plastischer Stil (Licht von links oben, weiche Kanten statt Konturlinien) ----------
+  const BASE = { wt: '#a07a3a', skin: '#9a6446', skin2: '#74472f', top: '#ece4d2', shorts: '#2c4a37', shorts2: '#213a2b', sock: '#f3efe6', stripe: '#2c4a37', shoe: '#2a2622', shoe2: '#1d1a17', hair: '#1c1512', beard: '#1c1512', ear: '#85533a', eye: '#1c1512' };
+  const LIGHT = (() => { const v = [-0.45, 0.89]; const l = Math.hypot(v[0], v[1]); return [v[0] / l, v[1] / l]; })();
+  let REAL = null; // { id, defs: [], n }
+  function shade(hex, f) { // f > 0 heller, f < 0 dunkler
+    const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(f >= 0 ? v + (255 - v) * f : v * (1 + f)));
+    return '#' + c.map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
+  }
+  const STOPS = (b, cls) => {
+    const lift = cls === 'top' || cls === 'sock' ? 0.35 : cls === 'hair' || cls === 'beard' || cls === 'shoe' || cls === 'shoe2' ? 0.22 : 0.2;
+    const sink = cls === 'top' || cls === 'sock' ? -0.16 : -0.3;
+    return '<stop offset="0" stop-color="' + shade(b, lift) + '"/><stop offset=".38" stop-color="' + b + '"/><stop offset=".78" stop-color="' + shade(b, sink * 0.65) + '"/><stop offset="1" stop-color="' + shade(b, sink) + '"/>';
+  };
+  function realFill(cls, A, B, rad) {
+    const b = BASE[cls]; if (!b) return null;
+    const id = REAL.id + 'g' + (REAL.n++);
+    if (!A) { // runde Form: Radialverlauf, Glanzpunkt links oben
+      REAL.defs.push('<radialGradient id="' + id + '" cx=".36" cy=".3" r=".8" fx=".32" fy=".24">' + STOPS(b, cls) + '</radialGradient>');
+    } else { // Gliedmaße: Zylinder-Schattierung quer zur Achse
+      const dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1e-6;
+      let nx = -dy / L, ny = dx / L;
+      if (nx * LIGHT[0] + ny * LIGHT[1] < 0) { nx = -nx; ny = -ny; }
+      const m = mid(A, B), p1 = [m[0] + nx * rad, m[1] + ny * rad], p2 = [m[0] - nx * rad, m[1] - ny * rad];
+      REAL.defs.push('<linearGradient id="' + id + '" gradientUnits="userSpaceOnUse" x1="' + f1(X(p1)) + '" y1="' + f1(Y(p1)) + '" x2="' + f1(X(p2)) + '" y2="' + f1(Y(p2)) + '">' + STOPS(b, cls) + '</linearGradient>');
+    }
+    return 'style="fill:url(#' + id + ');stroke:' + shade(b, -0.45) + ';stroke-opacity:.35;stroke-width:.5;stroke-linejoin:round"';
+  }
+  const paint = (cls, A, B, rad) => (REAL ? realFill(cls, A, B, rad) : null);
   // geschlossene weiche Form
   function blob(pts, cls) {
     const n = pts.length;
     let d = 'M' + SP(mid(pts[n - 1], pts[0]));
     for (let i = 0; i < n; i++) d += ' Q' + SP(pts[i]) + ' ' + SP(mid(pts[i], pts[(i + 1) % n]));
-    return '<path class="' + cls + '" d="' + d + 'Z"/>';
+    const pf = paint(cls);
+    return pf ? '<path class="' + cls + ' rl" ' + pf + ' d="' + d + 'Z"/>' : '<path class="' + cls + '" d="' + d + 'Z"/>';
   }
   // Gliedmaße mit Muskelprofil: prof = [[t, Radius], …] von A nach B, runde Enden
   function limb(A, B, prof, sc, cls, t0, t1) {
@@ -209,10 +238,11 @@
     d += a1 < 1 ? ' L' + SP(right[0]) : ' A' + f1(re) + ' ' + f1(re) + ' 0 0 1 ' + SP(right[0]); // Saum: gerade Kante
     d += smoothTo(right);
     d += a0 > 0 ? ' L' + SP(left[0]) : ' A' + f1(rs) + ' ' + f1(rs) + ' 0 0 1 ' + SP(left[0]);
-    return '<path class="' + cls + '" d="' + d + 'Z"/>';
+    const pf = paint(cls, along(A, B, a0), along(A, B, a1), Math.max(rs, re, r((a0 + a1) / 2)));
+    return pf ? '<path class="' + cls + ' rl" ' + pf + ' d="' + d + 'Z"/>' : '<path class="' + cls + '" d="' + d + 'Z"/>';
   }
   const along = (A, B, t) => [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t];
-  const circ = (p, r, cls) => '<circle class="' + cls + '" cx="' + f1(X(p)) + '" cy="' + f1(Y(p)) + '" r="' + f1(r) + '"/>';
+  const circ = (p, r, cls) => { const pf = cls === 'eye' ? null : paint(cls); return '<circle class="' + cls + (pf ? ' rl' : '') + '" ' + (pf || '') + ' cx="' + f1(X(p)) + '" cy="' + f1(Y(p)) + '" r="' + f1(r) + '"/>'; };
   // Profile (Radius in px bei Maßstab 1)
   const PR = {
     uarm: [[0, 6.4], [0.3, 6.8], [0.62, 5.6], [1, 4.6]],
@@ -283,7 +313,7 @@
     ['R', 'L'].forEach((k) => {
       const hip = j['hip' + k], kn = j['knee' + k], an = j['ankle' + k];
       s += limb(hip, kn, PR.thigh, sc, 'skin') + limb(kn, an, PR.shin, sc, 'skin') + limb(kn, an, [[0, 6.2], [1, 4.3]], sc, 'sock', 0.62, 1) + limb(kn, an, [[0, 6.3], [1, 4.4]], sc, 'stripe', 0.68, 0.74);
-      s += '<ellipse class="shoe" cx="' + f1(X(an) + (k === 'R' ? 2 : -2)) + '" cy="' + f1(Y(an) + 2) + '" rx="' + f1(6.5 * sc) + '" ry="' + f1(3.6 * sc) + '"/>';
+      s += '<ellipse class="shoe' + (REAL ? ' rl" ' + paint('shoe') : '"') + ' cx="' + f1(X(an) + (k === 'R' ? 2 : -2)) + '" cy="' + f1(Y(an) + 2) + '" rx="' + f1(6.5 * sc) + '" ry="' + f1(3.6 * sc) + '"/>';
       s += limb(hip, kn, [[0, 11], [1, 8.8]], sc, 'shorts', 0, 0.5);
     });
     // Rumpf
@@ -312,7 +342,11 @@
     let shadow = '';
     const feet = spec.view === F ? [j.ankleR, j.ankleL] : [j.ankle, j.ankle2, j.toe];
     const low = feet.filter((q) => q[1] < 10);
-    if (low.length) { const cx = low.reduce((a, q) => a + q[0], 0) / low.length; shadow = '<ellipse class="shadow" cx="' + f1(cx) + '" cy="' + f1(G - 1) + '" rx="26" ry="3.2"/>'; }
+    if (low.length) {
+      const cx = low.reduce((a, q) => a + q[0], 0) / low.length;
+      if (REAL) { const id = REAL.id + 'sh'; REAL.defs.push('<radialGradient id="' + id + '"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".55" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>'); shadow = '<ellipse fill="url(#' + id + ')" cx="' + f1(cx) + '" cy="' + f1(G - 0.5) + '" rx="34" ry="5"/>'; }
+      else shadow = '<ellipse class="shadow" cx="' + f1(cx) + '" cy="' + f1(G - 1) + '" rx="26" ry="3.2"/>';
+    }
     return shadow + (spec.view === F ? bodyFront(spec, j) : bodySide(spec, j));
   }
   function frame(spec, k) {
@@ -342,9 +376,16 @@
     return Object.assign({}, base, { props });
   }
   const getSpec = (s) => (typeof s === 'string' ? SPECS[s] : s);
-  function svg(specKey, k, cls) {
+  let realSeq = 0;
+  function svg(specKey, k, cls, opts) {
     const spec = getSpec(specKey);
     if (!spec) return '';
+    if (opts && opts.real) {
+      REAL = { id: 'h' + (++realSeq).toString(36) + '-', defs: [], n: 0 };
+      let body;
+      try { body = frame(spec, k === undefined ? 0 : k); } finally { var defs = REAL.defs.join(''); REAL = null; }
+      return '<svg class="' + (cls || 'fig') + ' real" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Bewegungsablauf"><defs>' + defs + '</defs>' + body + '</svg>';
+    }
     return '<svg class="' + (cls || 'fig') + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Bewegungsablauf">' + frame(spec, k === undefined ? 0 : k) + '</svg>';
   }
   // Animation in einem Element starten; gibt eine Stopp-Funktion zurück
