@@ -227,6 +227,7 @@
 
   // Verlauf der Stillstandszählung
   function analyze(history, ex) {
+    ex = eff(ex);
     let stall = 0, prev = null;
     const steps = [];
     for (const h of history) {
@@ -262,7 +263,7 @@
   // Kernfunktion: Vorschlag für die nächste Einheit einer Übung
   function suggest(state, exId, now, opts) {
     now = now || Date.now();
-    const ex = state.exercises[exId];
+    const ex = eff(state.exercises[exId]);
     const P = state.settings.progression;
     const deloadMode = opts && opts.deload !== undefined ? opts.deload : !!(state.deload && state.deload.active);
     const hist = exerciseHistory(state, exId);
@@ -416,11 +417,62 @@
       const e = state.exercises[id];
       const s = suggest(state, id, now, { deload });
       const sets = [];
-      for (let i = 0; i < s.sets; i++) sets.push({ w: s.weight, r: s.reps[i] !== undefined ? s.reps[i] : e.repMin, rir: null, warmup: false, done: false });
+      for (let i = 0; i < s.sets; i++) sets.push({ w: s.weight, r: s.reps[i] !== undefined ? s.reps[i] : eff(e).repMin, rir: null, warmup: false, done: false });
       return { exId: id, name: e.name, note: '', sugg: { weight: s.weight, reps: s.reps, kind: s.kind, reason: s.reason, last: s.last ? { W: s.last.W, reps: s.last.reps, date: s.last.date } : null }, sets };
     });
+    ssPairs(state, day).forEach((p, k) => exs.forEach((e) => { if (e.exId === p[0] || e.exId === p[1]) e.ss = k + 1; }));
     state.active = { id: uid('s'), dayId: day.id, dayName: day.name, start: now, deload, cur: 0, exercises: exs, timer: null, updatedAt: now, bw: bodyWeightAt(state, now) };
     return state.active;
+  }
+
+  // ---------- Supersätze ----------
+  // day.ss = IDs der Übungen, die mit der jeweils folgenden Übung des Tages gekoppelt sind (immer Paare)
+  function ssPairs(state, day) {
+    const ids = day.exerciseIds.filter((id) => state.exercises[id] && !state.exercises[id].archived), ss = day.ss || [], out = [];
+    for (let i = 0; i < ids.length - 1; i++) if (ss.indexOf(ids[i]) >= 0) { out.push([ids[i], ids[i + 1]]); i++; }
+    return out;
+  }
+  // Rolle einer Übung am Tag: { first: true|false, partner: id } oder null
+  function ssInfo(state, day, exId) {
+    const p = ssPairs(state, day).find((x) => x[0] === exId || x[1] === exId);
+    return p ? { first: p[0] === exId, partner: p[0] === exId ? p[1] : p[0] } : null;
+  }
+  // Koppelt exId mit der folgenden Übung (on) oder löst das Paar, zu dem exId gehört (off). Gibt die Partner-ID zurück.
+  function setSuperset(state, dayId, exId, on) {
+    const day = state.days.find((d) => d.id === dayId); if (!day) return null;
+    const ids = day.exerciseIds.filter((id) => state.exercises[id] && !state.exercises[id].archived);
+    const cur = ssInfo(state, day, exId);
+    let ss = (day.ss || []).filter((id) => ids.indexOf(id) >= 0), partner = null;
+    if (!on) {
+      if (!cur) return null;
+      const first = cur.first ? exId : cur.partner;
+      ss = ss.filter((id) => id !== first); partner = cur.partner;
+    } else {
+      const i = ids.indexOf(exId);
+      if (cur || i < 0 || i >= ids.length - 1) return null; // schon gekoppelt oder keine folgende Übung
+      partner = ids[i + 1];
+      ss = ss.filter((id) => id !== partner); // die folgende Übung kann nicht zugleich ein eigenes Paar anführen
+      ss.push(exId);
+    }
+    if (ss.length) day.ss = ss; else delete day.ss;
+    return partner;
+  }
+  function renameInSupersets(state, oldId, newId) {
+    state.days.forEach((d) => { if (d.ss) d.ss = d.ss.map((id) => (id === oldId ? newId : id)); });
+  }
+  // Partner in der laufenden Einheit (Index) oder -1
+  function ssPartnerIdx(active, idx) {
+    const e = active.exercises[idx];
+    return e && e.ss ? active.exercises.findIndex((x, j) => j !== idx && x.ss === e.ss) : -1;
+  }
+  // Nach einem abgehakten Arbeitssatz: Wohin geht es, und läuft die Pause?
+  // Erste Übung → ohne Pause zur zweiten. Zweite Übung → Pause, dann zurück zur ersten, solange dort Sätze offen sind.
+  function ssAfterCheck(active, idx) {
+    const p = ssPartnerIdx(active, idx);
+    if (p < 0) return { goto: null, rest: true };
+    const open = active.exercises[p].sets.some((s) => !s.done && !s.warmup);
+    if (idx < p) return open ? { goto: p, rest: false } : { goto: null, rest: true };
+    return { goto: open ? p : null, rest: true };
   }
 
   // Gewicht in nachfolgende leere Sätze übernehmen
@@ -432,9 +484,38 @@
     }
   }
 
-  function sessionVolume(session) {
+  // ---------- Gewichtsangabe und Zählweise ----------
+  // Gewicht: je Seite (Langhantel, ohne Stange), je Hantel (Kurzhantel) oder gesamt (Maschine, Kabel, Kettlebell).
+  // Wiederholungen: bei abwechselnden/einseitigen Kurzhantelübungen zählst du beide Seiten zusammen.
+  const ALT_KEYS = ['curl_db', 'hammer', 'db_row', 'bulgarian'];
+  function defaultLoad(equip) { return equip === 'barbell' ? 'side' : equip === 'dumbbell' ? 'each' : 'total'; }
+  function defaultSides(ex) { return ex.equip === 'dumbbell' && ALT_KEYS.indexOf(ex.lib) >= 0 ? 'alt' : 'both'; }
+  function loadMode(ex) { return (ex && ex.load) || defaultLoad(ex && ex.equip); }
+  function sidesMode(ex) { return (ex && ex.sides) || (ex ? defaultSides(ex) : 'both'); }
+  function repFactor(ex) { return sidesMode(ex) === 'alt' ? 2 : 1; }
+  // Übung mit wirksamem Wiederholungsbereich (bei „abwechselnd“ zählen beide Seiten: 8–12 je Seite = 16–24 gesamt)
+  function eff(ex) { const f = repFactor(ex); return f === 1 ? ex : Object.assign({}, ex, { repMin: ex.repMin * f, repMax: ex.repMax * f }); }
+  // Bewegte Last je Wiederholung in kg (für Volumen und 1RM)
+  function repLoad(ex, w, bar) {
+    w = w || 0;
+    const m = loadMode(ex);
+    if (m === 'side') return w > 0 || bar ? (bar || 0) + 2 * w : 0;
+    if (m === 'each') return sidesMode(ex) === 'alt' ? w : 2 * w;
+    return w;
+  }
+  // Gesamtgewicht zur Anzeige (Langhantel inkl. Stange, Kurzhanteln beide zusammen)
+  function totalWeight(ex, w, bar) { const m = loadMode(ex); return m === 'side' ? r2((bar || 0) + 2 * (w || 0)) : m === 'each' ? r2(2 * (w || 0)) : r2(w || 0); }
+  function loadLabel(ex) { const m = loadMode(ex); return m === 'side' ? 'je Seite' : m === 'each' ? 'je Hantel' : ''; }
+  const BAR = (state) => (state && state.settings && state.settings.plates ? state.settings.plates.bar : 20);
+  function setVolume(state, exId, x, ex) {
+    ex = ex || (state && state.exercises[exId]);
+    if (!ex) return (x.w || 0) * x.r;
+    if (ex.equip === 'bw' || ex.equip === 'bwplus') return (x.w || 0) * x.r;
+    return repLoad(ex, x.w, BAR(state)) * x.r;
+  }
+  function sessionVolume(session, state) {
     let v = 0, sets = 0;
-    session.exercises.forEach((e) => (e.sets || []).forEach((x) => { if (!x.warmup && x.done !== false && x.r > 0) { v += (x.w || 0) * x.r; sets++; } }));
+    session.exercises.forEach((e) => (e.sets || []).forEach((x) => { if (!x.warmup && x.done !== false && x.r > 0) { v += setVolume(state, e.exId, x); sets++; } }));
     return { volume: r2(v), sets };
   }
 
@@ -479,7 +560,7 @@
     if (!a) return null;
     const session = {
       id: a.id, dayId: a.dayId, dayName: a.dayName, start: a.start, end: now, deload: a.deload, bw: a.bw === undefined ? bodyWeightAt(state, a.start) : a.bw,
-      exercises: a.exercises.map((e) => ({ exId: e.exId, name: e.name, note: e.note || '', sets: e.sets.filter((s) => s.done).map((s) => ({ w: s.w === null || s.w === undefined ? 0 : s.w, r: s.r || 0, rir: s.rir, warmup: !!s.warmup })) }))
+      exercises: a.exercises.map((e) => ({ exId: e.exId, name: e.name, note: e.note || '', ss: e.ss || undefined, sets: e.sets.filter((s) => s.done).map((s) => ({ w: s.w === null || s.w === undefined ? 0 : s.w, r: s.r || 0, rir: s.rir, warmup: !!s.warmup })) }))
         .filter((e) => e.sets.length || e.note)
     };
     const prs = sessionPRs(state, session);
@@ -493,7 +574,7 @@
       if (state.deload.sessionsLeft === 0) endDeload(state);
     }
     state.active = null;
-    const vol = sessionVolume(session);
+    const vol = sessionVolume(session, state);
     return { session, durationSec: Math.round((now - a.start) / 1000), volume: vol.volume, sets: vol.sets, prs };
   }
 
@@ -503,7 +584,7 @@
     const ws = weekStart(now), we = ws + 7 * DAY;
     const gym = state.sessions.filter((s) => s.start >= ws && s.start < we);
     const cardio = state.cardio.filter((c) => c.date >= ws && c.date < we);
-    const vol = gym.reduce((a, s) => a + sessionVolume(s).volume, 0);
+    const vol = gym.reduce((a, s) => a + sessionVolume(s, state).volume, 0);
     return { weekStart: ws, week: isoWeek(now), gym, cardio, gymTarget: 4, cardioTarget: 1, volume: r2(vol) };
   }
 
@@ -515,7 +596,7 @@
       const ws = ws0 - i * 7 * DAY, we = ws + 7 * DAY;
       const g = state.sessions.filter((s) => s.start >= ws && s.start < we);
       const c = state.cardio.filter((x) => x.date >= ws && x.date < we);
-      out.push({ weekStart: ws, week: isoWeek(ws), sessions: g.length, volume: r2(g.reduce((a, s) => a + sessionVolume(s).volume, 0)), cardio: c.length, cardioKm: r2(c.reduce((a, x) => a + (x.distance || 0), 0)) });
+      out.push({ weekStart: ws, week: isoWeek(ws), sessions: g.length, volume: r2(g.reduce((a, s) => a + sessionVolume(s, state).volume, 0)), cardio: c.length, cardioKm: r2(c.reduce((a, x) => a + (x.distance || 0), 0)) });
     }
     return out;
   }
@@ -611,9 +692,9 @@
   function exerciseSeries(state, exId) {
     const ex = state.exercises[exId];
     return exerciseHistory(state, exId, { includeDeload: true }).map((h) => {
-      const s = summarize(h, ex);
+      const s = summarize(h, eff(ex));
       const total = (ex.equip === 'bw' || ex.equip === 'bwplus') && h.bw ? r2(h.bw + s.W) : null;
-      return { date: h.date, weight: s.W, total, reps: s.reps, e1rm: ex.equip === 'bw' || ex.equip === 'bwplus' ? null : r2(Math.max.apply(null, h.sets.map((x) => e1rm(x.w, x.r)))), volume: r2(h.sets.reduce((a, x) => a + (x.w || 0) * x.r, 0)), totalReps: h.sets.reduce((a, x) => a + x.r, 0), deload: h.deload };
+      return { date: h.date, weight: s.W, total, reps: s.reps, e1rm: ex.equip === 'bw' || ex.equip === 'bwplus' ? null : r2(Math.max.apply(null, h.sets.map((x) => e1rm(x.w, x.r / repFactor(ex))))), volume: r2(h.sets.reduce((a, x) => a + setVolume(state, exId, x, ex), 0)), totalReps: h.sets.reduce((a, x) => a + x.r, 0), deload: h.deload };
     });
   }
 
@@ -632,11 +713,47 @@
     return out.sort((a, b) => a.name.localeCompare(b.name, 'de'));
   }
 
+  // ---------- Export als Tabelle (CSV für Excel: Semikolon, Dezimalkomma, UTF-8 mit BOM) ----------
+  function csvCell(v) { v = v === null || v === undefined ? '' : String(v); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  // Freitext darf in Excel nicht als Formel gelesen werden
+  const csvText = (v) => { v = String(v || ''); return /^[=+\-@]/.test(v) ? "'" + v : v; };
+  const csvNum = (x) => (x === null || x === undefined || isNaN(x) ? '' : String(r2(x)).replace('.', ','));
+  const csvFile = (rows) => '\uFEFF' + rows.map((r) => r.map(csvCell).join(';')).join('\r\n') + '\r\n';
+  // Eine Zeile pro erledigtem Satz, älteste Einheit zuerst
+  function setsCSV(state) {
+    const rows = [['Datum', 'Beginn', 'Trainingstag', 'Deload', 'Übung', 'Gerät', 'Supersatz', 'Satz', 'Aufwärmsatz', 'Gewicht (kg, wie eingetragen)', 'Eintrag gilt', 'Gesamtgewicht (kg)', 'Wdh.', 'Reserve (Wdh.)', 'Volumen (kg)', 'Notiz']];
+    state.sessions.slice().sort((a, b) => a.start - b.start).forEach((se) => se.exercises.forEach((e) => {
+      const ex = state.exercises[e.exId], wt = ex ? usesWeight(ex) : true, body = ex && (ex.equip === 'bw' || ex.equip === 'bwplus');
+      let n = 0;
+      (e.sets || []).forEach((x) => {
+        if (!x.warmup) n++;
+        rows.push([fmtDateLong(se.start), fmtTime(se.start), csvText(se.dayName), se.deload ? 'ja' : 'nein', csvText(e.name), ex ? EQUIP[ex.equip] : '', e.ss ? 'ja' : 'nein',
+          x.warmup ? '' : n, x.warmup ? 'ja' : 'nein', wt ? csvNum(x.w) : '', !ex || !wt ? '' : ex.equip === 'bwplus' ? 'Zusatzgewicht' : loadLabel(ex) || 'gesamt',
+          ex && wt && !body ? csvNum(totalWeight(ex, x.w, BAR(state))) : '', x.r || 0, x.rir === null || x.rir === undefined ? '' : x.rir >= 4 ? '4+' : x.rir,
+          x.warmup ? '' : csvNum(setVolume(state, e.exId, x)), csvText(e.note)]);
+      });
+    }));
+    return csvFile(rows);
+  }
+  function cardioCSV(state) {
+    const rows = [['Datum', 'Art', 'Strecke (km)', 'Dauer (min)', 'Tempo', 'Ziel', 'Deload', 'Notiz']];
+    state.cardio.slice().sort((a, b) => a.date - b.date).forEach((c) => {
+      const t = CARDIO[c.type] ? c.type : 'other';
+      rows.push([fmtDateLong(c.date), CARDIO[t].label, csvNum(c.distance), c.duration ? csvNum(c.duration / 60) : '', pace(c, t) || '', c.target === null || c.target === undefined ? '' : fmtMetric(c.target, t), c.deload ? 'ja' : 'nein', csvText(c.note)]);
+    });
+    return csvFile(rows);
+  }
+
   function daysSinceBackup(state, now) {
     now = now || Date.now();
     const ref = state.meta.lastExportAt;
     if (!ref) return null;
     return Math.floor((now - ref) / DAY);
+  }
+  // Einträge, die nach der letzten Sicherung dazugekommen sind
+  function unsavedCount(state) {
+    const ref = state.meta.lastExportAt || 0;
+    return state.sessions.filter((s) => (s.end || s.start) > ref).length + state.cardio.filter((c) => c.date > ref).length;
   }
   function backupWarning(state, now) {
     now = now || Date.now();
@@ -649,7 +766,9 @@
       if (now - first >= 3 * DAY) return 'Du hast noch nie gesichert. Exportiere deine Daten, damit nichts verloren geht.';
       return null;
     }
-    if (d >= limit) return 'Letzte Sicherung vor ' + d + ' Tagen. Zeit für einen Export.';
+    // Ist seit der letzten Sicherung nichts dazugekommen, ist sie noch aktuell – dann keine Erinnerung
+    const n = unsavedCount(state);
+    if (d >= limit && n > 0) return 'Letzte Sicherung vor ' + d + ' Tagen, seitdem ' + (n === 1 ? 'ein neuer Eintrag' : n + ' neue Einträge') + '. Zeit für einen Export.';
     return null;
   }
 
@@ -677,7 +796,7 @@
     const perEx = {};
     gym.forEach((s) => {
       seconds += Math.max(0, (s.end - s.start) / 1000);
-      s.exercises.forEach((e) => workSets(e).forEach((x) => { sets++; volume += (x.w || 0) * x.r; perEx[e.exId] = perEx[e.exId] || { name: (state.exercises[e.exId] || e).name, volume: 0, sets: 0 }; perEx[e.exId].volume += (x.w || 0) * x.r; perEx[e.exId].sets++; }));
+      s.exercises.forEach((e) => workSets(e).forEach((x) => { sets++; volume += setVolume(state, e.exId, x); perEx[e.exId] = perEx[e.exId] || { name: (state.exercises[e.exId] || e).name, volume: 0, sets: 0 }; perEx[e.exId].volume += setVolume(state, e.exId, x); perEx[e.exId].sets++; }));
     });
     // Bestwerte im Monat: höchstes Gewicht über allem davor (nur Übungen mit Vorgeschichte)
     const prs = [];
@@ -790,6 +909,7 @@
     ['sets', 'repMin', 'repMax', 'rest', 'step'].forEach((k) => { ne[k] = old[k]; });
     ne.suggested = false;
     state.days.forEach((d) => { d.exerciseIds = d.exerciseIds.map((id) => (id === oldId ? ne.id : id)).filter((id, i, arr) => arr.indexOf(id) === i); });
+    renameInSupersets(state, oldId, ne.id);
     old.archived = true;
     return ne;
   }
@@ -801,8 +921,8 @@
     else ne = exerciseFromLib(state, key, { archived: true });
     const s = suggest(state, ne.id, now || Date.now(), { deload: a.deload });
     const sets = [];
-    for (let i = 0; i < s.sets; i++) sets.push({ w: s.weight, r: s.reps[i] !== undefined ? s.reps[i] : ne.repMin, rir: null, warmup: false, done: false });
-    a.exercises[idx] = { exId: ne.id, name: ne.name, note: '', swappedFrom: cur.name, sugg: { weight: s.weight, reps: s.reps, kind: s.kind, reason: s.reason, last: s.last ? { W: s.last.W, reps: s.last.reps, date: s.last.date } : null }, sets };
+    for (let i = 0; i < s.sets; i++) sets.push({ w: s.weight, r: s.reps[i] !== undefined ? s.reps[i] : eff(ne).repMin, rir: null, warmup: false, done: false });
+    a.exercises[idx] = { exId: ne.id, name: ne.name, note: '', swappedFrom: cur.name, ss: cur.ss, sugg: { weight: s.weight, reps: s.reps, kind: s.kind, reason: s.reason, last: s.last ? { W: s.last.W, reps: s.last.reps, date: s.last.date } : null }, sets };
     return ne;
   }
 
@@ -1014,11 +1134,13 @@
   }
 
   return {
+    loadMode, sidesMode, repFactor, repLoad, totalWeight, loadLabel, eff, setVolume,
     optimizeDue, optimizePlan, applyOptimization, optimizationChecked, snoozeOptimization, canUndoOptimization, undoOptimization, bodyWeightAt, logBodyWeight, currentAge, heartZones,
     DAY, SCHEMA, VOLUME_TARGET, plateLoad, monthReview, planVolume, planSuggestions, alternatives, addFromLib, addSetToExercise, replaceInPlan, swapInSession, exerciseFromLib, libOf, EQUIP, CARDIO, uid, r2, fmtNum, fmtKg, fmtDate, fmtDateLong, fmtTime, fmtDuration, parseDuration, parseNum, repsLabel,
     weekStart, isoWeek, e1rm, usesWeight, defaultSettings, defaultPlan, defaultState, migrate, validateImport,
     exerciseHistory, summarize, analyze, suggest, reduceWeight, deloadCheck, acceptDeload, declineDeload, endDeload, activeExerciseIds,
     nextDay, startSession, propagateWeight, sessionVolume, sessionPRs, finishSession, weekOverview, weeklyStats,
-    cardioMetric, fmtMetric, pace, cardioSuggest, logCardio, exerciseSeries, personalRecords, daysSinceBackup, backupWarning
+    cardioMetric, fmtMetric, pace, cardioSuggest, logCardio, exerciseSeries, personalRecords, daysSinceBackup, unsavedCount, backupWarning,
+    ssPairs, ssInfo, setSuperset, renameInSupersets, ssPartnerIdx, ssAfterCheck, setsCSV, cardioCSV
   };
 });

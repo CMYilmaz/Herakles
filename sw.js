@@ -1,6 +1,6 @@
 /* Herakles Service Worker: speichert die App komplett lokal, damit sie ohne Netz startet. */
-const CACHE = 'herakles-v2.9.0';
-const FILES = ['./', 'index.html', 'app.css', 'library.js', 'anim.js', 'core.js', 'app.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
+const CACHE = 'herakles-v3.2.0';
+const FILES = ['./', 'index.html', 'app.css', 'library.js', 'anim.js', 'core.js', 'ui-base.js', 'ui-render.js', 'ui-home.js', 'ui-gym.js', 'ui-history.js', 'ui-plan.js', 'ui-settings.js', 'app.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
