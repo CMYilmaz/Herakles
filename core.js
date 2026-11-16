@@ -120,12 +120,40 @@
     return Object.assign({ id: uid('e'), name, equip, sets: 3, repMin: 8, repMax: 12, rest: 90, step: 2.5, note: '', archived: false, suggested: false }, opts || {});
   }
 
+  // Schultertag nach eigener Liste (Plan-Version 3)
+  const SHOULDER_NOTES = {
+    ohp: 'Mit Kurzhanteln, Langhantel oder an der Maschine – über „Heute stattdessen“ wechseln.',
+    row: 'Mit Langhantel oder Kettlebell – über „Heute stattdessen“ wechseln.',
+    around: 'Wiederholungen = Umrundungen insgesamt. Nach der Hälfte die Richtung wechseln.',
+    pull: 'Wiederholungen = Züge insgesamt, beide Seiten zusammen.'
+  };
+  const SHOULDER_ORDER = [['ohp_db', 'ohp_machine', 'ohp_bb'], ['lat_raise_machine'], ['shrug_db'], ['upright_row', 'kb_upright_row'], ['kb_around'], ['kb_curl'], ['kb_pull_through'], ['pullup_w'], ['dips_w']];
+  // Ergänzt den Tag mit Klimmzügen/Dips mit Gewicht um die fehlenden Übungen und bringt ihn in die genannte Reihenfolge.
+  // Vorhandene Übungen bleiben erhalten (samt Verlauf); nicht genannte rücken ans Ende.
+  function addShoulderDay(state) {
+    if (!Library) return false;
+    const libOfId = (id) => state.exercises[id] && !state.exercises[id].archived ? state.exercises[id].lib : null;
+    const day = state.days.find((d) => d.exerciseIds.some((id) => libOfId(id) === 'pullup_w' || libOfId(id) === 'dips_w'));
+    if (!day) return false;
+    const extra = { ohp_db: { note: SHOULDER_NOTES.ohp }, upright_row: { note: SHOULDER_NOTES.row }, kb_around: { note: SHOULDER_NOTES.around }, kb_pull_through: { note: SHOULDER_NOTES.pull } };
+    const front = [];
+    SHOULDER_ORDER.forEach((keys) => {
+      let id = day.exerciseIds.find((x) => keys.indexOf(libOfId(x)) >= 0);
+      if (!id) { const l = Library.BY[keys[0]], e = ex(l.name, l.equip, extra[keys[0]]); e.lib = l.key; state.exercises[e.id] = e; id = e.id; }
+      front.push(id);
+    });
+    day.exerciseIds = front.concat(day.exerciseIds.filter((id) => front.indexOf(id) < 0));
+    return true;
+  }
+
   function defaultPlan() {
     const SUG = { suggested: true, note: 'Von der App als Ergänzung vorgeschlagen – archivieren, wenn du sie nicht willst.' };
     const days = [
       ['Brust & Bizeps', [ex('Bankdrücken', 'barbell'), ex('Schrägbankdrücken', 'dumbbell'), ex('Butterfly', 'machine'), ex('Brustpresse', 'machine'), ex('Bizepscurls', 'dumbbell'), ex('Hammercurls', 'dumbbell')]],
       ['Rücken & Trizeps', [ex('Klimmzüge', 'bw'), ex('Rudern', 'cable'), ex('Latzug', 'cable'), ex('Rudern breit', 'machine'), ex('Unterer Rücken (Hyperextension)', 'bwplus'), ex('Trizepsdrücken am Kabelturm', 'cable')]],
-      ['Schulter & Eigengewicht', [ex('Klimmzüge mit Gewicht', 'bwplus'), ex('Dips mit Gewicht', 'bwplus'), ex('Schulterdrücken', 'dumbbell', SUG), ex('Seitheben', 'dumbbell'), ex('Seitheben am Kabel', 'cable', SUG), ex('Reverse Butterfly', 'machine', SUG), ex('Kettlebell Swings', 'kettlebell', { note: 'Platzhalter für „Kettlebell-Übungen“ – im Plan umbenennen oder ergänzen.' }), ex('Liegestütze', 'bw')]],
+      ['Schulter & Eigengewicht', [ex('Schulterdrücken', 'dumbbell', { note: SHOULDER_NOTES.ohp }), ex('Seitheben an der Maschine', 'machine'), ex('Shrugs (Schulterheben)', 'dumbbell'),
+        ex('Aufrechtes Rudern', 'barbell', { note: SHOULDER_NOTES.row }), ex('Kettlebell Around the World', 'kettlebell', { note: SHOULDER_NOTES.around }), ex('Kettlebell-Curls', 'kettlebell'),
+        ex('Plank Pull-Through', 'kettlebell', { note: SHOULDER_NOTES.pull }), ex('Klimmzüge mit Gewicht', 'bwplus'), ex('Dips mit Gewicht', 'bwplus')]],
       ['Beine & Bauch', [ex('Kniebeuge', 'barbell', SUG), ex('Rumänisches Kreuzheben', 'barbell', SUG), ex('Beinpresse', 'machine'), ex('Beinstrecker', 'machine'), ex('Beinbeuger', 'machine'),
         ex('Wadendrücker', 'machine', { sets: 4, note: 'Wadenpresse und Wadendrücker zusammengelegt: 4 Sätze an einem Gerät deiner Wahl.' }),
         ex('Situps', 'bw', { sets: 4, note: 'Gerade und seitliche Situps zusammengelegt: abwechselnd ein Satz gerade, ein Satz seitlich.' }), ex('Russian Twists', 'kettlebell')]]
@@ -153,7 +181,7 @@
       deload: { active: false, sessionsLeft: 0, lastDeloadAt: null, snoozeUntil: null },
       body: [],
       optim: { lastAt: null, snoozeUntil: null, undo: null, log: [] },
-      planV: 2,
+      planV: 3,
       meta: { lastExportAt: null, updatedAt: now || Date.now() }
     };
   }
@@ -182,6 +210,8 @@
     // Plan-Version 2 (gestrafft): nur übernehmen, solange noch nichts trainiert wurde
     if ((s.planV || 1) < 2) { if (!out.sessions.length && !s.active) { out.exercises = d.exercises; out.days = d.days; out.rotation = { nextDayIndex: 0 }; } out.planV = 2; }
     if (Library) Object.values(out.exercises).forEach((e) => { if (e.lib === undefined || (e.lib && !Library.BY[e.lib])) e.lib = Library.match(e.name); });
+    // Plan-Version 3: Schultertag um Maschinen-Seitheben, Shrugs, aufrechtes Rudern und Kettlebell-Übungen ergänzen (einmalig)
+    if ((out.planV || 2) < 3) { addShoulderDay(out); out.planV = 3; }
     out.schema = SCHEMA;
     return out;
   }
@@ -1140,7 +1170,7 @@
     weekStart, isoWeek, e1rm, usesWeight, defaultSettings, defaultPlan, defaultState, migrate, validateImport,
     exerciseHistory, summarize, analyze, suggest, reduceWeight, deloadCheck, acceptDeload, declineDeload, endDeload, activeExerciseIds,
     nextDay, startSession, propagateWeight, sessionVolume, sessionPRs, finishSession, weekOverview, weeklyStats,
-    cardioMetric, fmtMetric, pace, cardioSuggest, logCardio, exerciseSeries, personalRecords, daysSinceBackup, unsavedCount, backupWarning,
+    cardioMetric, fmtMetric, pace, cardioSuggest, logCardio, exerciseSeries, personalRecords, daysSinceBackup, unsavedCount, backupWarning, addShoulderDay,
     ssPairs, ssInfo, setSuperset, renameInSupersets, ssPartnerIdx, ssAfterCheck, setsCSV, cardioCSV
   };
 });

@@ -53,7 +53,13 @@
     twist: { view: F, anchor: ['pelvis', 120, 30], A: { t: 98, ts: 0.85, hand: [-36, 30], th: 66, ths: 0.5, sh: 285, shs: 1 }, B: { t: 82, hand: [36, 30] }, props: [{ k: 'kb', at: 'hand' }, { k: 'line', p: [60, 2, 180, 2], w: 4 }] },
     hangraise: { view: S, scale: 0.66, anchor: ['wrist', 120, 150], A: { t: 90, ua: 90, fa: 90, th: 268, sh: 268, ft: 310 }, B: { th: 364, sh: 364, ft: 400 }, props: [{ k: 'line', p: [92, 150, 150, 150], w: 4 }] },
     cablecrunch: { view: S, anchor: ['knee', 120, 4], A: { t: 82, ua: 130, fa: 300, th: 270, sh: 180, ft: 192 }, B: { t: 18, ua: 70, fa: 230 }, props: [{ k: 'cable', from: [150, 172] }, { k: 'handle', at: 'wrist' }] },
-    plank: { view: S, anchor: ['ankle', 40, 8], A: { t: 11, ua: 270, fa: 0, th: 194, sh: 194, ft: 228 }, B: { t: 13 }, props: [] }
+    plank: { view: S, anchor: ['ankle', 40, 8], A: { t: 11, ua: 270, fa: 0, th: 194, sh: 194, ft: 228 }, B: { t: 13 }, props: [] },
+    // Schultertag mit Kettlebell (ab 3.4)
+    shrug: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, hx: 5, hy: -60, eb: -1, th: 273, sh: 270 }, B: { hx: 6, hy: -52 }, props: [{ k: 'db', at: 'wristR' }, { k: 'db', at: 'wristL' }], note: 'Ansicht von vorn' },
+    uprightrow: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, hx: -8, hy: -59, eb: -1, th: 273, sh: 270 }, B: { hx: -8, hy: -14 }, props: [{ k: 'barLR', ext: 22 }], note: 'Ansicht von vorn' },
+    kbrow: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, hx: -15, hy: -57, eb: -1, th: 273, sh: 270 }, B: { hx: -15, hy: -14 }, props: [{ k: 'kb', at: 'wristR', dx: -2 }], note: 'Ansicht von vorn' },
+    kbaround: { view: F, anchor: ['pelvis', 120, 74], A: { t: 90, hand: [-27, -4], th: 273, sh: 270 }, B: { hand: [27, -4] }, props: [{ k: 'kb', at: 'hand' }], note: 'Ansicht von vorn' },
+    pullthrough: { view: S, anchor: ['wrist', 142, 4], A: { t: 27, ua: 268, fa: 270, ua2: 250, fa2: 262, th: 207, sh: 207, ft: 212 }, B: { ua2: 214, fa2: 205 }, props: [{ k: 'kb', at: 'wrist2', dy: -12 }] }
   };
 
   // ---------- Kinematik ----------
@@ -377,9 +383,21 @@
   }
   const getSpec = (s) => (typeof s === 'string' ? SPECS[s] : s);
   let realSeq = 0;
+  // Quadratischer Bildausschnitt, mittig auf die Figur (für runde Vorschaubilder)
+  function fitBox(spec, k, pad) {
+    const j = joints(spec, k); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const key of Object.keys(j)) {
+      const p = j[key]; if (key === '_p' || !p || !isFinite(p[0]) || !isFinite(p[1])) continue;
+      const sy = G - p[1]; // Gelenke liegen mit y nach oben vor, das Bild mit y nach unten
+      x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy);
+    }
+    const s = Math.max(x1 - x0, y1 - y0) + 2 * (pad === undefined ? 16 : pad), r = (v) => Math.round(v * 10) / 10;
+    return [r((x0 + x1) / 2 - s / 2), r((y0 + y1) / 2 - s / 2), r(s), r(s)];
+  }
   function svg(specKey, k, cls, opts) {
     const spec = getSpec(specKey);
     if (!spec) return '';
+    if (opts && opts.fit) return '<svg class="' + (cls || 'fig') + '" viewBox="' + fitBox(spec, k === undefined ? 0 : k, opts.pad).join(' ') + '" aria-hidden="true">' + frame(spec, k === undefined ? 0 : k) + '</svg>';
     if (opts && opts.real) {
       REAL = { id: 'h' + (++realSeq).toString(36) + '-', defs: [], n: 0 };
       let body;
@@ -410,5 +428,5 @@
     if (reduce) { g.innerHTML = frame(spec, 1); } else raf = requestAnimationFrame(step);
     return () => { stopped = true; cancelAnimationFrame(raf); };
   }
-  return { SPECS, svg, play, joints, phaseK, forEntry, note: (k) => (SPECS[k] && SPECS[k].note) || '' };
+  return { SPECS, svg, fitBox, play, joints, phaseK, forEntry, note: (k) => (SPECS[k] && SPECS[k].note) || '' };
 });

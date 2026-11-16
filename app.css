@@ -1,4 +1,4 @@
-/* Herakles – Look „Scheibe“: Anzeigetafel statt Karten. Schmale, fette Auszeichnungsschrift, vollflächige Farbblöcke,
+/* Herakles – Grundlage Look „Scheibe“, darüber ab 3.3 der Look „Relief“ (siehe unten). Schmale, fette Auszeichnungsschrift, vollflächige Farbblöcke,
    harte Kanten, kräftige Linien, linksbündig. Farben: Creme, Waldgrün, Ocker. Nur Schriften, die das iPhone mitbringt. */
 :root {
   --disp: "DIN Condensed", "Barlow Condensed", "Avenir Next Condensed", "Arial Narrow", sans-serif;
@@ -377,5 +377,111 @@ table.t td.r, table.t th.r { text-align: right; }
 
 @media (max-width: 400px) { .rir { grid-template-columns: repeat(5, 1fr); } .rir .warm { grid-column: 1 / -1; } .vol { grid-template-columns: 100px 1fr 38px; } .stepcol input { font-size: 60px; } }
 @media (max-width: 360px) { .stepcol input { font-size: 54px; } .timer .left { font-size: 32px; } .wk .dot { width: 50px; height: 50px; } }
+/* =====================================================================================================
+   Look „Relief“ (ab 3.3): runde Formen statt Kanten, Gewebe auf dem Grund, Körnung und Lichtverlauf im Grün,
+   Gold als dritte Farbe, leichte Schatten, schwebende Navigation. Farben unverändert, alles lokal erzeugt.
+   ===================================================================================================== */
+:root {
+  --rule: 1px solid var(--line2);
+  --noise: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27220%27%20height%3D%27220%27%3E%3Cfilter%20id%3D%27n%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.85%27%20numOctaves%3D%272%27%20stitchTiles%3D%27stitch%27/%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%200%200%200%20.55%200%27/%3E%3C/filter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23n%29%27/%3E%3C/svg%3E");
+  --weave: rgba(236, 229, 211, .028);
+  --shadow: 0 10px 24px rgba(0, 0, 0, .34), 0 2px 5px rgba(0, 0, 0, .3); --shadow-s: 0 1px 3px rgba(0, 0, 0, .4);
+  --hero-grad: radial-gradient(90% 70% at 50% 62%, #2f5340 0%, var(--hero-bg) 60%, #14241b 100%);
+}
+[data-theme="light"] {
+  --weave: rgba(119, 90, 37, .05);
+  --shadow: 0 10px 24px rgba(29, 42, 33, .2), 0 2px 5px rgba(29, 42, 33, .16); --shadow-s: 0 1px 3px rgba(29, 42, 33, .16);
+  --hero-grad: radial-gradient(90% 70% at 50% 62%, #3a5f48 0%, var(--hero-bg) 60%, #172820 100%);
+}
+/* Gewebe */
+body, .home .base { background-image: repeating-linear-gradient(0deg, var(--weave) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, var(--weave) 0 1px, transparent 1px 3px); }
+.grain { position: absolute; inset: 0; pointer-events: none; background-image: var(--noise); opacity: .38; mix-blend-mode: multiply; }
+/* Formen */
+button, input, select, textarea { border-radius: 12px; }
+.card, .banner, .list, .editor { border-radius: 18px; }
+.card, .list { box-shadow: var(--shadow-s); border-color: transparent; }
+.banner { border-width: 1px; }
+.btn, .badge { border-radius: 999px; }
+.btn { border-width: 1.5px; }
+.btn.xl { box-shadow: var(--shadow); }
+.badge { border-width: 1.5px; padding: 2px 9px; }
+.topbar { border-bottom: 0; margin-bottom: 14px; }
+.topbar h1 { text-transform: none; font-size: 44px; }
+h2 { border-bottom: 0; margin-bottom: 10px; }
+.editor { border-width: 1.5px; box-shadow: var(--shadow-s); }
+.stepper button { border-radius: 16px; border-width: 1.5px; }
+.timer .tb button { border-radius: 999px; border-width: 1.5px; }
+.set { border-radius: 14px; border-bottom-width: 1px; margin-bottom: 2px; }
+.sugg { border-top: 0; gap: 10px; }
+.sugg .box { background: var(--surface); border-radius: 16px; padding: 10px 14px; box-shadow: var(--shadow-s); }
+.seg { border-bottom: 0; background: var(--surface); border-radius: 999px; padding: 2px; box-shadow: var(--shadow-s); }
+.seg button { border-radius: 999px; min-height: 44px; padding-left: 4px; padding-right: 4px; }
+.field input, .field select, .field textarea { border-width: 1.5px; }
+.sheet { border-top: 0; border-radius: 28px 28px 0 0; }
+.sheet .sheet-top { border-radius: 28px 28px 0 0; }
+.sheet .grab { border-radius: 2px; }
+#toast { border-radius: 999px; }
+.figbox { border-radius: 18px; }
+.kv { border-top: 0; }
+.exhead h1 { text-transform: none; font-size: 52px; }
+.gymbar { background: var(--hero-grad); }
+.prog { background: var(--hero-bg); gap: 4px; padding: 0 12px; height: 12px; align-items: flex-start; margin-bottom: 14px; border-radius: 0 0 18px 18px; }
+.prog i { height: 5px; border-radius: 3px; }
+.gymfoot { border-radius: 24px 24px 0 0; box-shadow: 0 -6px 18px rgba(15, 25, 19, .16); overflow: hidden; }
+.finish-card { border-radius: 22px; margin: 0 -6px; background: var(--hero-grad); }
+.li.ss { box-shadow: inset 5px 0 0 var(--accent); }
+
+/* Navigation: schwebende Leiste */
+.view { padding-bottom: calc(var(--safe-b) + 104px); }
+.nav { left: 14px; right: 14px; bottom: calc(var(--safe-b) + 12px); background: none; border-top: 0; padding-bottom: 0; }
+.nav .in { max-width: 532px; padding: 6px; background: var(--surface); border-radius: 30px; box-shadow: var(--shadow); }
+.nav .navblock { left: 6px; top: 6px; bottom: 6px; width: calc((100% - 12px) / 4); border-radius: 24px; }
+.nav button { min-height: 48px; font-size: 20px; border-radius: 24px; }
+
+/* Heute: grüne Fläche mit großer Figur, darüber das helle Blatt */
+.hero { position: relative; overflow: hidden; background: var(--hero-grad); padding-bottom: 62px; }
+.hero > :not(.grain) { position: relative; }
+.mast { margin-bottom: 16px; }
+.mast .emblem { width: 24px; height: 25px; }
+.wordmark { font-size: 20px; }
+.herotitle { text-transform: none; line-height: 1; margin-top: 2px; }
+.lead { display: block; width: 100%; text-align: left; color: var(--hero-text); margin-top: 4px; }
+.leadfig { display: block; margin: 0 8px; }
+.leadfig svg { display: block; width: 100%; height: auto; max-height: min(30vh, 260px); }
+.leadcap { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+.leadcap b, .leadcap .t { font: 700 22px/1.1 var(--disp); }
+.leadcap b { color: var(--gold); }
+.leadcap .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leadcap .r { margin-left: auto; flex: none; font-size: 13px; color: var(--hero-muted); }
+.home .base { position: relative; margin: -46px -20px 0; padding: 12px 20px 0; background-color: var(--bg); border-radius: 34px 34px 0 0; box-shadow: 0 -8px 24px rgba(15, 25, 19, .28); }
+.grip { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+.thumbs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
+.thumbs.more { display: flex; justify-content: flex-start; gap: 8px; margin: 0 -20px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.thumbs.more::-webkit-scrollbar { display: none; }
+.thumb { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); }
+.tdisc { width: 56px; height: 56px; border-radius: 50%; background: var(--surface2); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; display: grid; place-items: center; }
+.tdisc svg { display: block; width: 100%; height: 100%; }
+.tn { font: 700 24px/1 var(--disp); color: var(--ochre); }
+.tl { font-size: 12px; line-height: 1.2; text-align: center; max-width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
+.thumb.sug .tl { color: var(--ochre); }
+.thumbs.more .thumb { flex: none; width: 64px; }
+.tdisc { flex: none; }
+@media (max-height: 700px) { .leadfig svg { max-height: 22vh; } .tl { -webkit-line-clamp: 1; } .mast { margin-bottom: 8px; } }
+.home .base > .meta { text-align: center; font-size: 14px; color: var(--muted); margin: 10px 0 12px; }
+.home .base .btn.xl.primary { background: var(--gold); border-color: var(--gold); color: #1b2a20; }
+.home .base > .card.empty { margin-top: 4px; }
+/* Figuren einfarbig: hell auf Grün (groß), dunkel auf Sand (klein); Hantelscheiben als Ring, damit der Kopf sichtbar bleibt */
+.sil .skin, .sil .skin2, .sil .top, .sil .shorts, .sil .shorts2, .sil .sock, .sil .shoe, .sil .shoe2, .sil .hair, .sil .beard, .sil .ear { fill: var(--hero-text); stroke: var(--hero-text); stroke-width: 1.2; stroke-linejoin: round; }
+.sil2 .skin, .sil2 .skin2, .sil2 .top, .sil2 .shorts, .sil2 .shorts2, .sil2 .sock, .sil2 .shoe, .sil2 .shoe2, .sil2 .hair, .sil2 .beard, .sil2 .ear { fill: var(--accent); stroke: var(--accent); stroke-width: 1.2; stroke-linejoin: round; }
+.sil .eye, .sil .stripe, .sil .shadow, .sil2 .eye, .sil2 .stripe, .sil2 .shadow { display: none; }
+.sil .floor { stroke: var(--gold); stroke-width: 2; }
+.sil2 .floor { stroke: var(--line2); stroke-width: 2; }
+.sil .eq, .sil .eqd, .sil .cable { stroke: var(--gold); stroke-linecap: round; }
+.sil2 .eq, .sil2 .eqd, .sil2 .cable { stroke: var(--ochre); stroke-linecap: round; }
+.sil .eq-f, .sil .hub, .sil .hub2 { fill: var(--gold); }
+.sil2 .eq-f, .sil2 .hub, .sil2 .hub2 { fill: var(--ochre); }
+.sil .wt { fill: none; stroke: var(--gold); stroke-width: 3.5; }
+.sil2 .wt { fill: none; stroke: var(--ochre); stroke-width: 4; }
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 .month-head .mt { text-align: center; }

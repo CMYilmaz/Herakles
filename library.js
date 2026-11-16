@@ -73,6 +73,24 @@
   x('ohp_db', 'Schulterdrücken', 'dumbbell', ['Schulter vorn'], ['Trizeps', 'Schulter seitlich'], 'ohp',
     ['Lehne fast senkrecht', 'Hanteln auf Schulterhöhe starten', 'Über den Kopf drücken, ohne ins Hohlkreuz zu gehen', 'Bis auf Ohrhöhe absenken'],
     'Die Grunddrückübung für die Schulter.', { aliases: ['schulterdrücken kurzhantel', 'shoulder press', 'überkopfdrücken'] });
+  x('ohp_machine', 'Schulterpresse (Maschine)', 'machine', ['Schulter vorn'], ['Trizeps', 'Schulter seitlich'], 'ohp',
+    ['Sitz so einstellen, dass die Griffe auf Schulterhöhe liegen', 'Rücken an der Lehne lassen', 'Nach oben drücken, Ellbogen nicht durchschlagen', 'Langsam bis auf Ohrhöhe ablassen'],
+    'Geführte Variante des Schulterdrückens – gut, wenn die Kurzhanteln besetzt sind oder du ohne Balancearbeit drücken willst.', { aliases: ['schulterpresse', 'schulterpresse maschine', 'shoulder press maschine'] });
+  x('ohp_bb', 'Schulterdrücken (Langhantel)', 'barbell', ['Schulter vorn'], ['Trizeps', 'Schulter seitlich'], 'ohp',
+    ['Stange auf Höhe des Schlüsselbeins greifen, etwas weiter als schulterbreit', 'Bauch und Gesäß anspannen', 'Stange gerade nach oben drücken, Kopf leicht zurück und wieder vor', 'Kontrolliert zum Schlüsselbein ablassen'],
+    'Schulterdrücken mit der Stange – in kleinen Schritten steigerbar.', { aliases: ['schulterdrücken langhantel', 'military press', 'overhead press'] });
+  x('lat_raise_machine', 'Seitheben an der Maschine', 'machine', ['Schulter seitlich'], [], 'latraise',
+    ['Polster liegen außen an den Unterarmen oder Ellbogen', 'Aufrecht sitzen, Brust am Polster', 'Arme seitlich bis Schulterhöhe heben', 'Langsam ablassen, Gewicht nicht absetzen'],
+    'Geführtes Seitheben mit gleichmäßiger Spannung über den ganzen Weg.', { aliases: ['seitliches schulterdrücken', 'seitheben maschine', 'lateral raise maschine', 'schulter seitlich maschine'] });
+  x('shrug_db', 'Shrugs (Schulterheben)', 'dumbbell', ['Rücken'], [], 'shrug',
+    ['Aufrecht stehen, Arme bleiben gestreckt', 'Schultern gerade nach oben Richtung Ohren ziehen', 'Oben kurz halten', 'Langsam ablassen, Schultern nicht kreisen'],
+    'Direktes Training für den Nacken (oberer Trapezmuskel).', { aliases: ['shrugs', 'schulterheben', 'nackenheben', 'schultern hochziehen'] });
+  x('upright_row', 'Aufrechtes Rudern', 'barbell', ['Schulter seitlich'], ['Rücken', 'Bizeps'], 'uprightrow',
+    ['Stange etwa schulterbreit greifen', 'Eng am Körper nach oben ziehen', 'Ellbogen führen und bleiben über den Händen', 'Bis etwa Brusthöhe, dann langsam ablassen'],
+    'Zieht Schulter und Nacken gemeinsam – Ellbogen gehen seitlich nach oben.', { aliases: ['rudern zum kinn', 'hochziehen zum kinn', 'upright row', 'langhantel zum kinn'] });
+  x('kb_upright_row', 'Aufrechtes Rudern (Kettlebell)', 'kettlebell', ['Schulter seitlich'], ['Rücken', 'Bizeps'], 'kbrow',
+    ['Kettlebell mit beiden Händen am Griff fassen', 'Eng am Körper nach oben ziehen', 'Ellbogen führen und bleiben über den Händen', 'Bis etwa Brusthöhe, dann langsam ablassen'],
+    'Dieselbe Bewegung wie mit der Langhantel, wenn die Stange besetzt ist.', { aliases: ['kettlebell zum kinn', 'kettlebell upright row', 'kettlebell hochziehen'] });
   x('lat_raise', 'Seitheben', 'dumbbell', ['Schulter seitlich'], [], 'latraise',
     ['Leicht nach vorn geneigt stehen', 'Arme seitlich bis Schulterhöhe heben', 'Ellbogen führen, leicht gebeugt', 'Langsam ablassen, kein Schwung'],
     'Die direkteste Übung für die seitliche Schulter – sorgt für breitere Schultern.', { aliases: ['seitheben kurzhantel', 'lateral raise'] });
@@ -129,6 +147,15 @@
   x('calf_raise', 'Wadendrücker', 'machine', ['Waden'], [], 'calfraise',
     ['Fußballen auf der Kante', 'Knie fast gestreckt', 'Unten dehnen, oben 1 s halten', 'Kein Wippen'],
     'Stehende Variante – trainiert die Wade mit gestrecktem Knie.', { aliases: ['wadenheben', 'wadenheben stehend', 'calf raise'] });
+  x('kb_around', 'Kettlebell Around the World', 'kettlebell', ['Bauch'], ['Schulter vorn', 'Unterer Rücken'], 'kbaround',
+    ['Aufrecht stehen, Bauch fest', 'Kettlebell eng um den Körper kreisen und vorn und hinten in die andere Hand geben', 'Hüfte bleibt ruhig', 'Nach der Hälfte die Richtung wechseln'],
+    'Hält den Rumpf stabil, während die Arme arbeiten – trainiert auch Griff und Schultern.', { aliases: ['around the world', 'kettlebell um den körper', 'kettlebell kreisen'] });
+  x('kb_curl', 'Kettlebell-Curls', 'kettlebell', ['Bizeps'], [], 'curl',
+    ['Ellbogen am Körper fixiert', 'Kettlebell hängt unter der Hand', 'Hoch bis kurz vor die Schulter', 'Unten ganz strecken'],
+    'Bizepscurls mit der Kettlebell – das Gewicht hängt tiefer und zieht länger am Bizeps.', { aliases: ['bizepscurls kettlebell', 'kettlebell curl', 'curls mit kettlebell'], animProps: 'kb' });
+  x('kb_pull_through', 'Plank Pull-Through', 'kettlebell', ['Bauch'], ['Schulter vorn', 'Rücken'], 'pullthrough',
+    ['Liegestützposition, Arme gestreckt, Füße etwas breiter', 'Mit einer Hand unter dem Körper durchgreifen und die Kettlebell auf die andere Seite ziehen', 'Hüfte bleibt parallel zum Boden', 'Seite wechseln'],
+    'Der Rumpf muss gegen die Drehung halten, während ein Arm zieht.', { aliases: ['kettlebell durchziehen', 'plank drag', 'kettlebell drag', 'liegestütz kettlebell rüberziehen'] });
   x('kb_swing', 'Kettlebell Swings', 'kettlebell', ['Gesäß', 'Beinbeuger'], ['Unterer Rücken'], 'swing',
     ['Aus der Hüfte schwingen, nicht aus den Armen', 'Rücken gerade, Kettlebell zwischen den Beinen', 'Explosiv Hüfte strecken, Gesäß anspannen', 'Kettlebell bis Brusthöhe'],
     'Kräftigt die hintere Kette explosiv und bringt den Puls hoch.', { aliases: ['kettlebell swing', 'kettlebell übungen', 'kb swings'] });
@@ -152,7 +179,7 @@
     ['Ellbogen unter den Schultern', 'Körper eine Linie', 'Gesäß und Bauch anspannen', 'Ruhig atmen'],
     'Rumpfstabilität ohne Geräte.', { aliases: ['plank', 'planke'] });
 
-  const FAMILY = {"calf_press": "calf", "calf_raise": "calf", "situp": "situp", "situp_side": "situp", "dips": "dips", "dips_w": "dips", "pullup": "pullup", "pullup_w": "pullup", "curl_db": "curl", "hammer": "curl"}; // gleichwertige Varianten
+  const FAMILY = {"calf_press": "calf", "calf_raise": "calf", "situp": "situp", "situp_side": "situp", "dips": "dips", "dips_w": "dips", "pullup": "pullup", "pullup_w": "pullup", "curl_db": "curl", "hammer": "curl", "kb_curl": "curl", "kb_upright_row": "upright_row", "ohp_machine": "ohp_db", "ohp_bb": "ohp_db", "lat_raise_machine": "lat_raise"}; // gleichwertige Varianten
   L.forEach((e) => { e.family = FAMILY[e.key] || e.key; });
   const BY = {};
   L.forEach((e) => { BY[e.key] = e; });

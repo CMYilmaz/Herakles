@@ -4,7 +4,7 @@
   const HK = window.HeraklesUI = {}; // gemeinsamer Namensraum aller Oberflächen-Dateien
 
   const C = window.Core, LIB = window.Library, AN = window.Anim;
-  const VERSION = '3.2.0';
+  const VERSION = '3.4.0';
   // Auszeichnungsschrift (auf dem iPhone vorinstalliert) und Hilfen dazu
   const DISP = '"DIN Condensed", "Barlow Condensed", "Avenir Next Condensed", "Arial Narrow", sans-serif';
   // Große Titel so skalieren, dass das längste Wort in eine Zeile passt
